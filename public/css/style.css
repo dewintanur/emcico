@@ -1,0 +1,8 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+:root {
+    --bs-primary: #091F5B;
+    --bs-secondary: #E1E9FF;
+    --bs-body-bg: #F5F5F5;
+}
