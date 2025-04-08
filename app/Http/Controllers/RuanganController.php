@@ -12,12 +12,13 @@ use App\Events\KonfirmasiCheckoutEvent;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\RuanganBelumSiap;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 class RuanganController extends Controller
 {
     public function index(Request $request)
     {
-        $today = '2025-07-01'; // Tanggal tetap
+        $today = now()->toDateString(); // Tanggal tetap
         $today_ci = now()->toDateString(); // Tanggal check-in harus hari ini
     
         $query = Ruangan::with([
@@ -183,5 +184,37 @@ class RuanganController extends Controller
     
         return back()->with('error', 'Akses ditolak.');
     }
-
+    public function showImportForm()
+    {
+        return view('it.importRuangan');
+    }
+    
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt'
+        ]);
+    
+        try {
+            $file = fopen($request->file('file'), 'r');
+            $header = fgetcsv($file); // lewati baris header
+    
+            while (($row = fgetcsv($file)) !== false) {
+                Ruangan::create([
+                    'nama_ruangan'   => $row[0],
+                    'lantai'         => $row[1],
+                    'tanggal'        => $row[2],
+                    'waktu_mulai'    => $row[3],
+                    'waktu_selesai'  => $row[4],
+                    'status'         => $row[5],
+                ]);
+            }
+    
+            fclose($file);
+            return back()->with('success', 'Data ruangan berhasil diimpor!');
+        } catch (\Exception $e) {
+            Log::error('Import Ruangan Gagal: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengimpor data.');
+        }
+    }
 }

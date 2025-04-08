@@ -16,101 +16,112 @@ use Illuminate\Support\Facades\Auth;
 class KehadiranController extends Controller
 {
     /**
-     * Cek kode booking sebelum check-in.
+     * Cek kode booking sebelum check-in.dari halaman user
      */
     public function checkBooking(Request $request)
     {
         $request->validate([
             'id_booking' => 'required'
         ]);
-
+    
         $kodeBooking = $request->id_booking;
-        Log::info('Kode booking yang dimasukkan: ' . $kodeBooking);
-
         $booking = Booking::where('kode_booking', $kodeBooking)
-            ->whereDate('tanggal', '2025-07-01')
+            ->whereDate('tanggal', today()) // ✅ Pastikan booking hanya untuk hari ini
             ->first();
-
+    
         if (!$booking) {
-            Log::warning('Kode booking tidak ditemukan atau tidak berlaku.', [
-                'kode_booking' => $kodeBooking
-            ]);
-            return back()->with('gagal', 'Kode booking tidak ditemukan atau sudah kadaluarsa.');
+            return back()->with('gagal', 'Kode booking tidak ditemukan atau tidak berlaku.');
         }
-        // Ambil waktu minimal check-in dari .env
-        $jamMinimalCheckin = env('CHECKIN_START_TIME', '06:00');
+    
         $waktuSekarang = now()->format('H:i');
-
-        if ($waktuSekarang < $jamMinimalCheckin) {
-            return back()->with('gagal', 'Check-in hanya bisa dilakukan setelah pukul ' . $jamMinimalCheckin . '.');
+        $jamMulai = $booking->waktu_mulai;
+        $jamSelesai = $booking->waktu_selesai;
+    
+        if ($waktuSekarang < $jamMulai) {
+            return back()->with('gagal', "Check-in hanya bisa dilakukan setelah pukul $jamMulai.");
         }
-
+    
+        if ($waktuSekarang > $jamSelesai) {
+            return back()->with('gagal', "Check-in sudah ditutup. Batas check-in adalah pukul $jamSelesai.");
+        }
+    
         $sudahCheckin = Kehadiran::where('kode_booking', $kodeBooking)
             ->whereDate('tanggal_ci', today())
             ->exists();
-
+    
         if ($sudahCheckin) {
             return back()->with('gagal', 'Anda sudah melakukan check-in hari ini.');
         }
-
-        Log::info('Kode booking ditemukan dan belum check-in hari ini.', ['booking' => $booking]);
-        LogAktivitas::create([
-            'user_id' => Auth::check() ? Auth::id() : null, // Jika user login, simpan user_id, kalau tidak, biarkan null
-            'aktivitas' => 'Melakukan check-in',
-            'waktu' => Carbon::now(),
-        ]);
-        
-        
+    
         return redirect()->route('isi_data')->with([
             'success' => 'Silakan isi data check-in Anda.',
             'booking' => $booking
         ]);
     }
+    public function checkin($kodeBooking) 
+{
+    $booking = Booking::where('kode_booking', $kodeBooking)
+        ->whereDate('tanggal', today())
+        ->first();
 
-    public function checkin($kodeBooking)
-    {
-
-        $booking = Booking::where('kode_booking', $kodeBooking)
-            ->whereDate('tanggal', '2025-07-01')
-            ->first();
-
-        if (!$booking) {
-            Log::warning('Kode booking tidak ditemukan atau tidak berlaku.', [
-                'kode_booking' => $kodeBooking
-            ]);
-            return back()->with('gagal', 'Kode booking tidak ditemukan atau sudah kadaluarsa.');
-        }
-
-        // Ambil waktu minimal check-in dari .env
-        $jamMinimalCheckin = env('CHECKIN_START_TIME', '06:00');
-        $waktuSekarang = now()->format('H:i');
-
-        if ($waktuSekarang < $jamMinimalCheckin) {
-            return back()->with('gagal', 'Check-in hanya bisa dilakukan setelah pukul ' . $jamMinimalCheckin . '.');
-        }
-
-        $sudahCheckin = Kehadiran::where('kode_booking', $kodeBooking)
-            ->whereDate('tanggal_ci', today())
-            ->exists();
-
-        if ($sudahCheckin) {
-            return back()->with('gagal', 'Anda sudah melakukan check-in hari ini.');
-        }
-
-        Log::info('Kode booking ditemukan dan belum check-in hari ini.', ['booking' => $booking]);
-        LogAktivitas::create([
-            'user_id' => Auth::check() ? Auth::id() : null, // Jika user login, simpan user_id, kalau tidak, biarkan null
-            'aktivitas' => 'Melakukan check-in',
-            'waktu' => Carbon::now(),
+    if (!$booking) {
+        Log::warning('Kode booking tidak ditemukan atau tidak berlaku.', [
+            'kode_booking' => $kodeBooking
         ]);
-        
-        
-        return redirect()->route('isi_data')->with([
-            'success' => 'Silakan isi data check-in Anda.',
-            'booking' => $booking
-        ]);
+        return back()->with('gagal', 'Kode booking tidak ditemukan atau sudah kadaluarsa.');
     }
-   
+
+    $waktuSekarang = now()->format('H:i');
+    $jamMulai = $booking->waktu_mulai;
+    $jamSelesai = $booking->waktu_selesai;
+
+    // Validasi waktu check-in (jam mulai dan selesai)
+    if ($waktuSekarang < $jamMulai) {
+        return back()->with('gagal', "Check-in hanya bisa dilakukan setelah pukul $jamMulai.");
+    }
+
+    if ($waktuSekarang > $jamSelesai) {
+        return back()->with('gagal', "Check-in sudah ditutup. Batas check-in adalah pukul $jamSelesai.");
+    }
+
+    // Cek apakah sudah check-in
+    $sudahCheckin = Kehadiran::where('kode_booking', $kodeBooking)
+        ->whereDate('tanggal_ci', today())
+        ->exists();
+
+    if ($sudahCheckin) {
+        return back()->with('gagal', 'Sudah dilakukan check-in hari ini.');
+    }
+
+    // Tambahan validasi: hanya boleh check-in jika booking sebelumnya sudah check-out
+    $bookingSebelumnya = Booking::join('kehadiran', 'booking.kode_booking', '=', 'kehadiran.kode_booking')
+        ->where('booking.tanggal', $booking->tanggal)
+        ->where('booking.ruangan_id', $booking->ruangan_id)
+        ->where('booking.lantai', $booking->lantai)
+        ->where('booking.waktu_selesai', '<=', $booking->waktu_mulai)
+        ->where('kehadiran.status', 'checked-out')
+        ->orderBy('booking.waktu_selesai', 'desc')
+        ->first();
+
+    if (!$bookingSebelumnya && $waktuSekarang < $jamMulai) {
+        return back()->with('gagal', 'Check-in hanya bisa dilakukan mulai pukul ' . $jamMulai . ', atau setelah booking sebelumnya selesai dan sudah check-out.');
+    }
+
+    // Log aktivitas
+    Log::info('Kode booking ditemukan dan belum check-in hari ini.', ['booking' => $booking]);
+    LogAktivitas::create([
+        'user_id' => Auth::check() ? Auth::id() : null,
+        'aktivitas' => 'Melakukan check-in',
+        'waktu' => Carbon::now(),
+    ]);
+
+    return redirect()->route('isi_data')->with([
+        'success' => 'Silakan isi data check-in Anda.',
+        'booking' => $booking
+    ]);
+}
+
+    
         // Fungsi untuk menangani hasil scan barcode
         public function scanBarcode(Request $request)
         {
@@ -329,7 +340,7 @@ class KehadiranController extends Controller
     
         // Ubah status check-out
         $kehadiran->status = 'Checked-out';
-        $kehadiran->tanggal_co = now();
+        // $kehadiran->tanggal_co = now();
         $kehadiran->save();
     
         return redirect()->back()->with('success', 'Checkout berhasil!');

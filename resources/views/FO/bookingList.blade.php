@@ -40,116 +40,117 @@
     </style>
 @endpush
 @section('content')
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".mark-as-read").forEach(button => {
-                button.addEventListener("click", function () {
-                    let notificationId = this.getAttribute("data-id");
-                    let kodeBooking = this.getAttribute("data-kode");
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".mark-as-read").forEach(button => {
+            button.addEventListener("click", function () {
+                let notificationId = this.getAttribute("data-id");
+                let kodeBooking = this.getAttribute("data-kode");
 
-                    fetch(`/notifications/${notificationId}/read`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Hapus notifikasi dari daftar
-                                document.getElementById(`notif-${notificationId}`).remove();
+                fetch(`/notifications/${notificationId}/read`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Hapus notifikasi dari daftar
+                            document.getElementById(`notif-${notificationId}`).remove();
 
-                                // Redirect ke elemen yang sesuai
-                                window.location.hash = `#booking-${kodeBooking}`;
+                            // Redirect ke elemen yang sesuai
+                            window.location.hash = `#booking-${kodeBooking}`;
 
-                                // Tambahkan efek highlight
-                                setTimeout(() => {
-                                    let targetRow = document.getElementById(`booking-${kodeBooking}`);
-                                    if (targetRow) {
-                                        targetRow.classList.add("highlight");
-                                        setTimeout(() => {
-                                            targetRow.classList.remove("highlight");
-                                        }, 2000);
-                                    }
-                                }, 500);
-                            }
-                        });
-                });
-            });
-
-            // Jika halaman dimuat ulang dan ada hash, tambahkan highlight
-            let hash = window.location.hash;
-            if (hash) {
-                let targetRow = document.querySelector(hash);
-                if (targetRow) {
-                    setTimeout(() => {
-                        targetRow.classList.add("highlight");
-                        setTimeout(() => {
-                            targetRow.classList.remove("highlight");
-                        }, 2000);
-                    }, 500);
-                }
-            }
-        });
-        function updateTable() {
-            $.ajax({
-                url: "{{ route('booking.status') }}", // Route ini mengambil status terbaru dari DB
-                type: "GET",
-                success: function (response) {
-                    console.log("Response dari server:", response); // Cek data di console browser
-
-                    response.data.forEach(function (item) {
-                        let row = $("#booking-" + item.kode_booking);
-                        let statusCell = $(".status-" + item.kode_booking);
-
-                        console.log("Update untuk Kode Booking:", item.kode_booking);
-                        console.log("Status saat ini:", item.status);
-                        console.log("Konfirmasi saat ini:", item.status_konfirmasi);
-
-                        // Update teks status
-                        statusCell.text(item.status_konfirmasi);
-
-                        // Reset semua warna (debugging: cek class sebelum update)
-                        console.log("Class sebelum dihapus:", row.attr("class"));
-                        row.removeClass("alert-highlight alert-siap alert-normal");
-                        console.log("Class setelah dihapus:", row.attr("class"));
-
-                        // Tambahkan warna sesuai status konfirmasi
-                        if (item.status.toLowerCase() === "checked-in") {
-                            if (item.status_konfirmasi === "belum_siap_checkout") {
-                                row.addClass("alert-highlight"); // Kuning
-                            } else if (item.status_konfirmasi === "siap_checkout") {
-                                row.addClass("alert-siap"); // Hijau
-                            }
-                        } else if (item.status.toLowerCase() === "checked-out") {
-                            row.addClass("alert-normal"); // Putih
+                            // Tambahkan efek highlight
+                            setTimeout(() => {
+                                let targetRow = document.getElementById(`booking-${kodeBooking}`);
+                                if (targetRow) {
+                                    targetRow.classList.add("highlight");
+                                    setTimeout(() => {
+                                        targetRow.classList.remove("highlight");
+                                    }, 2000);
+                                }
+                            }, 500);
                         }
                     });
-                },
-                error: function (xhr, status, error) {
-                    console.log("AJAX Error:", error); // Debug jika request gagal
-                }
             });
+        });
+
+        // Jika halaman dimuat ulang dan ada hash, tambahkan highlight
+        let hash = window.location.hash;
+        if (hash) {
+            let targetRow = document.querySelector(hash);
+            if (targetRow) {
+                setTimeout(() => {
+                    targetRow.classList.add("highlight");
+                    setTimeout(() => {
+                        targetRow.classList.remove("highlight");
+                    }, 2000);
+                }, 500);
+            }
         }
+    });
 
-        // Jalankan update setiap 5 detiki
-        setInterval(updateTable, 5000);
-        setInterval(checkNotification, 5000);
+    function updateTable() {
+        $.ajax({
+            url: "{{ route('booking.status') }}", // Route ini mengambil status terbaru dari DB
+            type: "GET",
+            success: function (response) {
+                console.log("Response dari server:", response); // Cek data di console browser
 
-        function checkNotification() {
-            fetch('/notifications/${notificationId}/read`') // Ganti dengan endpoint notifikasi di backend kamu
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ada_notifikasi) {
-                        alert('Anda punya notifikasi baru!');
-                        // Bisa juga update elemen notifikasi tanpa alert
+                response.data.forEach(function (item) {
+                    let row = $("#booking-" + item.kode_booking);
+                    let statusCell = $(".status-" + item.kode_booking);
+
+                    console.log("Update untuk Kode Booking:", item.kode_booking);
+                    console.log("Status saat ini:", item.status);
+                    console.log("Konfirmasi saat ini:", item.status_konfirmasi);
+
+                    // Update teks status
+                    statusCell.text(item.status_konfirmasi);
+
+                    // Reset semua warna (debugging: cek class sebelum update)
+                    console.log("Class sebelum dihapus:", row.attr("class"));
+                    row.removeClass("alert-highlight alert-siap alert-normal");
+                    console.log("Class setelah dihapus:", row.attr("class"));
+
+                    // Tambahkan warna sesuai status konfirmasi
+                    if (item.status.toLowerCase() === "checked-in") {
+                        if (item.status_konfirmasi === "belum_siap_checkout") {
+                            row.addClass("alert-highlight"); // Kuning
+                        } else if (item.status_konfirmasi === "siap_checkout") {
+                            row.addClass("alert-siap"); // Hijau
+                        }
+                    } else if (item.status.toLowerCase() === "checked-out") {
+                        row.addClass("alert-normal"); // Putih
                     }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log("AJAX Error:", error); // Debug jika request gagal
+            }
+        });
+    }
 
-    </script>
+    // Jalankan update setiap 5 detik
+    setInterval(updateTable, 5000);
+    setInterval(checkNotification, 5000);
+
+    function checkNotification() {
+        fetch('/notifications/unread') // Ganti dengan endpoint notifikasi yang sesuai di backend
+            .then(response => response.json())
+            .then(data => {
+                if (data.ada_notifikasi) {
+                    console.log('Ada notifikasi baru');
+                    // Misalnya, tambahkan badge, alert, atau refresh list notifikasi
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
 
     @foreach (auth()->user()->unreadNotifications as $notification)
         <li id="notif-{{ $notification->id }}">
@@ -166,6 +167,17 @@
         </li>
     @endforeach
 
+    @if(session('gagal'))
+    <div class="alert alert-danger">
+        {{ session('gagal') }}
+    </div>
+@endif
+
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
     <div class="container my-4" style="max-width: 1200px;">
         <div class="display-4 flex-column flex-md-row text-center mb-4">

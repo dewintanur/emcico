@@ -17,12 +17,18 @@ return new class extends Migration
             $table->string('nama_ci');
             $table->string('no_ci');
             $table->date('tanggal_ci');
-            $table->string('ruangan');
+            $table->unsignedBigInteger('ruangan_id')->nullable(); // FK ke ruangan
             $table->integer('lantai');
-            $table->text('ttd'); // Untuk menyimpan tanda tangan dalam bentuk file path atau base64
+            $table->text('ttd'); // Tanda tangan
             $table->string('duty_officer');
             $table->enum('status', ['Booked', 'Checked-in', 'Checked-out']);
+            $table->enum('status_konfirmasi', ['belum_dikonfirmasi', 'siap_checkout'])->default('belum_dikonfirmasi');
+            $table->unsignedBigInteger('fo_id')->nullable(); // FK ke users
             $table->timestamps();
+
+            // Foreign key constraints
+            $table->foreign('ruangan_id')->references('id')->on('ruangan')->onDelete('set null');
+            $table->foreign('fo_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 
@@ -31,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kehadirans');
+        Schema::dropIfExists('kehadiran');
     }
 };

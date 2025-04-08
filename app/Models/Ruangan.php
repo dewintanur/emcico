@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Ruangan extends Model
 {
     protected $table = 'ruangan';
-
+    protected $fillable = [
+        'nama_ruangan',
+        'lantai',
+        'tanggal',
+        'waktu_mulai',
+        'waktu_selesai',
+        'status'
+    ];
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'ruangan_id', 'id');

@@ -19,22 +19,22 @@
             <form action="{{ route('list_barang.store') }}" method="POST">
                 @csrf
                 <div class="mb-3">
-                    <label for="nama_barang" class="form-label fw-bold">📦 Nama Barang</label>
+                    <label for="nama_barang" class="form-label fw-bold">Nama Barang</label>
                     <input type="text" class="form-control" name="nama_barang" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="jumlah" class="form-label fw-bold">🔢 Jumlah</label>
+                    <label for="jumlah" class="form-label fw-bold">Jumlah</label>
                     <input type="number" class="form-control" name="jumlah" required min="1">
                 </div>
 
                 <div class="mb-3">
-                    <label for="satuan" class="form-label fw-bold">📏 Satuan</label>
+                    <label for="satuan" class="form-label fw-bold">Satuan</label>
                     <input type="text" class="form-control" name="satuan" required>
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn text-white px-4" style="background-color:#091F5B; border-radius: 8px;">Simpan Barang</button>
+                    <button type="submit" class="btn text-white fw-bold px-4" style="background-color:#091F5B; border-radius: 8px;">Simpan Barang</button>
                 </div>
             </form>
         </div>

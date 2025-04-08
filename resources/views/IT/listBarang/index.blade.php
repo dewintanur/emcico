@@ -11,7 +11,7 @@
     @endif
 
     <div class="text-end mb-3">
-        <a href="{{ route('list_barang.create') }}" class="btn text-white" style="background-color:#091F5B; border-radius: 8px;">Tambah Barang</a>
+        <a href="{{ route('list_barang.create') }}" class="btn btn-success text-white" style=" border-radius: 8px;">Tambah Barang</a>
     </div>
 
     <div class="card">

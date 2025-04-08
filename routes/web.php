@@ -52,7 +52,6 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
     Route::middleware('role:front_office')->group(function () {
         Route::get('/booking-list', [BookingController::class, 'index'])->name('fo.bookingList');
         Route::post('/assign-dutyofficer/{id}', [KehadiranController::class, 'assignDutyOfficer'])->name('assign.dutyofficer');
-        Route::post('/notifications/{id}/read', [BookingController::class, 'read'])->name('notifications.read');
         Route::get('/export/pdf', [BookingController::class, 'exportPDF'])->name('booking.export.pdf');
         Route::get('/export/csv', [BookingController::class, 'exportCSV'])->name('booking.export.csv');
         Route::post('/checkout', [KehadiranController::class, 'checkout'])->name('checkout');
@@ -62,14 +61,7 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
     Route::middleware('role:duty_officer')->group(function () {
         Route::post('/ruangan/{id}/konfirmasi', [RuanganController::class, 'konfirmasi'])->name('ruangan.konfirmasi');
         Route::post('/ruangan/{id}/belum-siap', [RuanganController::class, 'belumSiap'])->name('ruangan.belum_siap');
-        Route::get('/booking-status', function () {
-            $today = Carbon::now()->toDateString();
-            $kehadiran = Kehadiran::select('kode_booking', 'status', 'status_konfirmasi')
-                ->whereDate('tanggal_ci', $today)
-                ->orderByDesc('updated_at')
-                ->get();
-            return response()->json(['data' => $kehadiran]);
-        })->name('booking.status');
+
     });
 
     // **🔵 Marketing**
@@ -97,6 +89,8 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
         Route::post('/generate-barcode', [BarcodeController::class, 'generateAndSend'])->name('barcode.send');
         Route::get('booking/import', [ImportController::class, 'showImportForm'])->name('booking.import');
         Route::post('booking/import', [ImportController::class, 'import']);
+        Route::get('/import-ruangan', [RuanganController::class, 'showImportForm'])->name('ruangan.import.form');
+        Route::post('/import-ruangan', [RuanganController::class, 'import'])->name('ruangan.import');
 
         Route::get('/list_barang', [ListBarangController::class, 'index'])->name('list_barang.index');
         Route::get('/list_barang/create', [ListBarangController::class, 'create'])->name('list_barang.create');
@@ -133,11 +127,29 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
         }
         return back();
     })->name('notifikasi.read');
-
+    Route::post('/notifikasi/{id}/read', [BookingController::class, 'read'])->name('notifikasi.read');
+    Route::get('/booking-status', function () {
+        $today = Carbon::now()->toDateString();
+        $kehadiran = Kehadiran::select('kode_booking', 'status', 'status_konfirmasi')
+            ->whereDate('tanggal_ci', $today)
+            ->orderByDesc('updated_at')
+            ->get();
+        return response()->json(['data' => $kehadiran]);
+    })->name('booking.status');
+    Route::get('/notifications/unread', function () {
+        $user = auth()->user();
+        $unread = $user->unreadNotifications ?? collect();
+        return response()->json([
+            'ada_notifikasi' => $unread->count() > 0,
+            'jumlah' => $unread->count()
+        ]);
+    });
+    
     // **📜 Riwayat Check-in (Bisa Diakses Semua)**
     Route::get('/riwayat-checkin', [CheckinHistoryController::class, 'index'])->name('riwayat.checkin');
     Route::get('/riwayat-checkin/{kode_booking}', [CheckinHistoryController::class, 'show'])->name('riwayat.checkin.detail');
     Route::get('/riwayat-checkin/export/excel', [CheckinHistoryController::class, 'exportExcel'])->name('riwayat.checkin.export.excel');
     Route::get('/riwayat-checkin/export/pdf', [CheckinHistoryController::class, 'exportPDF'])->name('riwayat.checkin.export.pdf');
+    Route::post('/notifications/{id}/read', [BookingController::class, 'read'])->name('notifications.read');
 
 });

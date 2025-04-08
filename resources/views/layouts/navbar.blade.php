@@ -169,6 +169,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item py-2" href="/import-ruangan">
+                                            <i class="fas fa-file-import me-2"></i> Import Ruangan
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item py-2" href="{{ route('list_barang.index') }}">
                                             <i class="fas fa-boxes me-2"></i> List Barang
                                         </a>

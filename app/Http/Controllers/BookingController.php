@@ -9,6 +9,8 @@ use App\Models\Kehadiran;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
+
 class BookingController extends Controller
 {
     /**
@@ -23,9 +25,8 @@ class BookingController extends Controller
                 'kehadiran.nama_ci',
                 'kehadiran.no_ci',
                 'kehadiran.tanggal_ci',
-                'kehadiran.status_konfirmasi', // ✅ Tambahkan ini
-
-                DB::raw('CASE WHEN kehadiran.tanggal_ci IS NOT NULL THEN kehadiran.duty_officer ELSE NULL END as duty_officer'), // ✅ Kosongkan jika belum check-in
+                'kehadiran.status_konfirmasi',
+                DB::raw('CASE WHEN kehadiran.tanggal_ci IS NOT NULL THEN kehadiran.duty_officer ELSE NULL END as duty_officer'),
                 'ruangan.nama_ruangan',
                 'ruangan.lantai'
             )
@@ -35,55 +36,52 @@ class BookingController extends Controller
             })
             ->leftJoin('kehadiran', function ($join) {
                 $join->on('booking.kode_booking', '=', 'kehadiran.kode_booking')
-                    ->whereDate('kehadiran.tanggal_ci', now()); // 📌 Hanya ambil check-in hari ini
+                    ->whereDate('kehadiran.tanggal_ci', now());
             })
-            ->whereDate('booking.tanggal', '2025-07-01') // 📌 Semua booking tetap diambil
+            ->whereDate('booking.tanggal', today()) // ✅ Hanya ambil booking hari ini
             ->orderBy('booking.waktu_mulai', 'asc')
             ->orderBy('ruangan.lantai', 'asc');
-        // 🔍 **Filter Status**
+    
         if ($request->has('status') && $request->status != '') {
             if ($request->status === 'Approved') {
-                // ✅ Ambil hanya booking yang tidak punya check-in/check-out
                 $query->whereNull('kehadiran.status');
             } else {
                 $query->where('kehadiran.status', $request->status);
             }
         }
-
-        // 🔍 **Pencarian Nama Event atau Kode Booking (hanya setelah ENTER)**
+    
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
                 $q->where('booking.kode_booking', 'LIKE', '%' . $request->search . '%')
                     ->orWhere('booking.nama_event', 'LIKE', '%' . $request->search . '%');
             });
         }
+    
         $perPage = 10;
         $bookings = $query->paginate($perPage);
-
-        // ✅ Ambil duty officer hanya dari yang check-in hari ini
-        $dutyOfficers = User::where('role', 'duty_officer')->get(); // ✅ Ambil semua duty officer
-
+    
+        $dutyOfficers = User::where('role', 'duty_officer')->get();
+    
         return view('FO.bookingList', compact('bookings', 'dutyOfficers'));
-
     }
-    public function read(Request $request, $id)
+    
+    public function read($id, Request $request)
     {
-        $notification = Auth::user()->notifications()->find($id);
-
-        if (!$notification) {
-            return back()->with('error', 'Notifikasi tidak ditemukan');
+        try {
+            $user = auth()->user();
+    
+            $notification = $user->notifications()->find($id);
+            if ($notification) {
+                $notification->markAsRead();
+    
+                return response()->json(['success' => true, 'message' => 'Notification marked as read']);
+            }
+    
+            return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
+        } catch (\Exception $e) {
+            Log::error('Notification read error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Server error'], 500);
         }
-
-        $notification->markAsRead();
-
-        // Ambil kode_booking dari data notifikasi
-        $kodeBooking = $notification->data['kode_booking'] ?? null;
-
-        if ($kodeBooking) {
-            return redirect()->route('booking.show', ['kode_booking' => $kodeBooking]);
-        }
-
-        return back()->with('message', 'Notifikasi dibaca, tetapi kode booking tidak ditemukan.');
     }
     public function exportPDF()
     {

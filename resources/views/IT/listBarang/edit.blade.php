@@ -4,7 +4,7 @@
 <div class="container mt-5">
     <div class="card shadow rounded">
         <div class="card-header text-white" style="background-color:#091F5B;">
-            <h4 class="mb-0">✏️ Edit Barang</h4>
+            <h4 class="mb-0">Edit Barang</h4>
         </div>
 
         <div class="card-body">
