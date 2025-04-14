@@ -29,6 +29,7 @@
     </script>
 @endpush
 
+
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ url('/') }}">
@@ -102,7 +103,8 @@
 
                         </li>
                     @endif
-
+                    @if (!in_array(Route::currentRouteName(), ['barcode.scan', 'inputkode.show']))
+    
                     <div class="d-flex align-items-center rounded-pill border px-3 py-1"
                         style="border: 2px solid #091F5B; font-family: 'Montserrat', sans-serif; color: #091F5B; background-color: transparent;">
                         <!-- Profile Icon -->
@@ -205,6 +207,7 @@
                             </ul>
                         </div>
                     </div>
+                    @endif
 
                 @endauth
             </div>

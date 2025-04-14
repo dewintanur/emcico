@@ -30,10 +30,14 @@ class BarcodeController extends Controller
                 mkdir($folderPath, 0777, true);
             }
 
-            // ✅ Simpan QR Code sebagai file PNG
-            $qrCodePath = "qrcodes/$kode.png";
-            $filePath = storage_path("app/public/" . $qrCodePath);
-            file_put_contents($filePath, QrCode::format('png')->size(300)->generate($kode));
+           // ✅ Simpan QR Code sebagai file PNG
+$qrCodePath = "qrcodes/$kode.png";
+$filePath = storage_path("app/public/" . $qrCodePath);
+file_put_contents($filePath, QrCode::format('png')
+    ->size(300)
+    ->margin(1)
+    ->errorCorrection('H')
+    ->generate($kode));
 
             // ✅ Pastikan URL gambar dapat diakses
             $qrCodeUrl = asset("storage/qrcodes/$kode.png"); // Gambar dapat diakses melalui URL ini

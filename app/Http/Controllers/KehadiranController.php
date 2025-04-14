@@ -126,31 +126,45 @@ class KehadiranController extends Controller
         public function scanBarcode(Request $request)
         {
             $kodeBooking = $request->kode_booking;
-    
-            // Cek apakah kode booking valid
-            $booking = Booking::where('kode_booking', $kodeBooking)->first();
-    
+        
+            // Ambil booking untuk hari ini
+            $booking = Booking::where('kode_booking', $kodeBooking)
+                ->whereDate('tanggal', today())
+                ->first();
+        
             if (!$booking) {
-                return response()->json(['status' => 'error', 'message' => 'Kode booking tidak ditemukan.'], 404);
+                return response()->json(['status' => 'error', 'message' => 'Kode booking tidak ditemukan atau tidak berlaku untuk hari ini.'], 404);
             }
-    
-            // Cek apakah sudah check-in sebelumnya
-            $kehadiran = Kehadiran::where('kode_booking', $kodeBooking)->first();
-            if ($kehadiran) {
-                return response()->json(['status' => 'error', 'message' => 'Kode booking ini sudah check-in.'], 400);
+        
+            $waktuSekarang = now()->format('H:i');
+            if ($waktuSekarang < $booking->waktu_mulai) {
+                return response()->json(['status' => 'error', 'message' => "Check-in hanya bisa dilakukan setelah pukul {$booking->waktu_mulai}."], 403);
             }
-    
-            // Simpan data check-in
-            Kehadiran::create([
-                'kode_booking' => $booking->kode_booking,
-                'nama_ci' => $booking->nama_pemesan,
-                'tanggal_ci' => now(),
-                'status' => 'Sedang Digunakan',
+        
+            if ($waktuSekarang > $booking->waktu_selesai) {
+                return response()->json(['status' => 'error', 'message' => "Check-in sudah ditutup. Batas check-in adalah pukul {$booking->waktu_selesai}."], 403);
+            }
+        
+            $sudahCheckin = Kehadiran::where('kode_booking', $kodeBooking)
+                ->whereDate('tanggal_ci', today())
+                ->exists();
+        
+            if ($sudahCheckin) {
+                return response()->json(['status' => 'error', 'message' => 'Kode booking ini sudah melakukan check-in.'], 400);
+            }
+        
+            // Simpan ke session dan arahkan ke isi_data (lewat frontend redirect)
+            session([
+                'booking' => $booking,
+                'success' => 'Silakan isi data check-in Anda.'
             ]);
-    
-            return response()->json(['status' => 'success', 'message' => 'Check-in berhasil.']);
+        
+            return redirect()->route('isi_data')->with([
+                'success' => 'Silakan isi data check-in Anda.',
+                'booking' => $booking
+            ]);
         }
-    
+        
 
     /**
      * Menampilkan halaman untuk mengisi data check-in.

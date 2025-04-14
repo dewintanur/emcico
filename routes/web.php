@@ -19,7 +19,8 @@ use App\Models\Kehadiran;
 // **💻 Halaman Awal**
 Route::get('/', function () {
     return view('user/input_kode');
-});
+})->name('inputkode.show');
+
 Route::get('/scan-barcode', function () {
     return view('barcode.scan');
 })->name('barcode.scan');
