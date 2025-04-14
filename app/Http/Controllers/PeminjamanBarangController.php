@@ -9,6 +9,7 @@ use App\Models\ListBarang;
 use Illuminate\Support\Facades\Auth; // Tambahkan ini jika belum ada
 use Illuminate\Support\Facades\Log; // Tambahkan ini di atas
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PeminjamanBarangController extends Controller
 {
@@ -163,29 +164,29 @@ public function store(Request $request)
 
 
     public function produksi(Request $request)
-{
-    // Ambil filter tanggal & pencarian jika ada
-    $filterDate = $request->input('date');
-    $search = $request->input('search');
-
-    // Query untuk mendapatkan data peminjaman dari tabel `booking`
-    $query = Booking::with('ruangan');
-
-    // Filter berdasarkan tanggal
-    if ($filterDate) {
-        $query->whereDate('tanggal', $filterDate);
+    {
+        $filterDate = $request->input('date');
+        $search = $request->input('search');
+    
+        $query = Booking::with(['ruangan', 'peminjaman']); // tambahkan relasi peminjaman jika diperlukan
+    
+        if ($filterDate) {
+            $query->whereDate('tanggal', $filterDate);
+        } else {
+            // Tampilkan data hari ini dan besok jika tidak ada filter
+            $today = Carbon::today();
+            $tomorrow = Carbon::tomorrow();
+    
+            $query->whereBetween('tanggal', [$today, $tomorrow]);
+        }
+    
+        if ($search) {
+            $query->where('nama_event', 'LIKE', "%$search%");
+        }
+    
+        $bookings = $query->orderBy('tanggal', 'asc')->get();
+    
+        return view('produksi.produksiList', compact('bookings'));
     }
-
-    // Filter berdasarkan nama event
-    if ($search) {
-        $query->where('name', 'LIKE', "%$search%");
-    }
-
-    // Ambil data setelah filter diterapkan
-    $bookings = $query->get();
-
-    return view('produksi.produksiList', compact('bookings'));
-}
-
 
 }

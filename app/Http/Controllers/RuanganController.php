@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\RuanganBelumSiap;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\PeminjamanBarang;
 class RuanganController extends Controller
 {
     public function index(Request $request)
@@ -145,6 +146,9 @@ class RuanganController extends Controller
         // Debug setelah update
         \Log::info('Setelah update:', ['status_konfirmasi' => $kehadiran->status_konfirmasi]);
         $ruangan = Ruangan::find($id);
+// Tambahan: Perbarui status pengembalian barang
+PeminjamanBarang::where('kode_booking', $kehadiran->kode_booking)
+    ->update(['status_pengembalian' => 'Sudah Dikembalikan']);
 
         // Kirim notifikasi ke FO
         if ($ruangan) {

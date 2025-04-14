@@ -14,11 +14,11 @@
             <form method="GET" action="#" class="d-flex align-items-center justify-content-between">
                 <!-- Date Filter -->
                 <div class="me-3">
-                    <input type="date" name="date" class="form-control" value="">
+                <input type="date" name="date" class="form-control" value="{{ request('date') }}">
                 </div>
                 <!-- Search Filter -->
                 <div>
-                    <input type="text" name="search" class="form-control" placeholder="Search by Event Name" value="">
+                <input type="text" name="search" class="form-control" placeholder="Search by Event Name" value="{{ request('search') }}">
                 </div>
             </form>
         </div>
@@ -36,40 +36,6 @@
                     <div class="col-md-1 text-left" style="font-weight: bold">Aksi</div>
                 </div>
             </div>
-
-            <!-- Dummy Data -->
-            @php
-                $dummyBookings = [
-                    [
-                        'id' => 1,
-                        'booking_code' => 'BK001',
-                        'name' => 'Workshop Laravel',
-                        'user_name' => 'Tech Community',
-                        'filterDate' => '2025-02-18',
-                        'ruangans' => [
-                            ['name' => 'Auditorium', 'floor' => 'Lantai 2']
-                        ],
-                        'start_time' => '10:00',
-                        'end_time' => '12:00',
-                        'pic_name' => 'Budi Santoso',
-                        'pic_phone_number' => '081234567890'
-                    ],
-                    [
-                        'id' => 2,
-                        'booking_code' => 'BK002',
-                        'name' => 'Seminar AI',
-                        'user_name' => 'AI Enthusiasts',
-                        'filterDate' => '2025-02-19',
-                        'ruangans' => [
-                            ['name' => 'Meeting Room A', 'floor' => 'Lantai 3']
-                        ],
-                        'start_time' => '13:00',
-                        'end_time' => '15:00',
-                        'pic_name' => 'Siti Rahma',
-                        'pic_phone_number' => '089876543210'
-                    ]
-                ];
-            @endphp
 
             @foreach ($bookings as $booking)
                 <div class="card-header text-dark my-2 shadow-sm" style="background-color:white; border-radius: 5px;">
@@ -166,6 +132,7 @@
 
                 <h5 class="section-title mt-3 mx-2" style="color: #091F5B">List Barang yang Dipinjam</h5>
 
+
                 @if ($booking->peminjaman->count() > 0)
                     <table class="table table-bordered mx-auto rounded-sm">
                         <thead>
@@ -173,6 +140,7 @@
                                 <th>No</th>
                                 <th>Nama Item</th>
                                 <th>Jumlah</th>
+                                <th>Status Pengembalian</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,6 +149,7 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $item->barang->nama_barang }}</td>
                                     <td>{{ $item->jumlah }}</td>
+                                    <td class="color: {{ $item->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">{{ $item->status_pengembalian ?? 'Belum Dikembalikan' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

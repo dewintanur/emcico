@@ -140,6 +140,8 @@
                                                     <th>No</th>
                                                     <th>Nama Barang</th>
                                                     <th>Jumlah</th>
+                                                    <th>Status Pengembalian</th>
+
                                                 </tr>
                                             </thead>
                                             <tbody id="availableItems">
@@ -148,6 +150,7 @@
                                                         <td>{{ $index + 1 }}</td>
                                                         <td>{{ $barang->nama_barang }}</td>
                                                         <td>{{ $barang->jumlah }}</td>
+                                                        <td class="color: {{ $barang->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">{{ $barang->status_pengembalian ?? 'Belum Dikembalikan' }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
