@@ -62,8 +62,15 @@
                 </div>
                 <div class="modal-body">
                     <ul style="font-size: 14px;">
-                        <li>Penggunaan ruangan maksimal pukul 21.00 WIB.</li>
-                        <li>Menjaga fasilitas ruangan.</li>
+                      
+                        <li>Penggunaan ruangan maksimal hingga pukul 21.00 WIB.</li>
+                        <li>Menjaga kebersihan dan kerapihan ruangan selama dan setelah penggunaan.</li>
+                        <li>Dilarang merusak, memindahkan, atau menghilangkan fasilitas ruangan tanpa izin.</li>
+                        <li>Jika terjadi kerusakan, peminjam wajib melaporkan kepada petugas yang berwenang.</li>
+                        <li>Penggunaan ruangan hanya untuk keperluan yang telah disetujui dalam proses booking.</li>
+                        <li>Dilarang membawa makanan/minuman berlebih yang dapat mengotori ruangan, kecuali telah mendapat izin.</li>
+                        <li>Barang-barang pribadi dan sisa acara harus dibersihkan sebelum waktu peminjaman berakhir.</li>
+                        <li>Peminjam bertanggung jawab penuh atas kegiatan selama penggunaan ruangan.</li>
                     </ul>
 
                     <!-- Signature -->

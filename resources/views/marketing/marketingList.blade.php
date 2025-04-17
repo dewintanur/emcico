@@ -121,8 +121,7 @@
                                                 <div class="col-md-6 d-flex align-items-center mt-2">
                                                     <p class="mb-0 fw-bold flex-shrink-0" style="width: 100px;">Tanggal</p>
                                                     <p class="mb-0 text-end ms-3" style="color: #091F5B;">
-                                                        {{ $booking->tanggal }}
-                                                    </p>
+    {{ \Carbon\Carbon::parse($booking['tanggal'])->translatedFormat('d F Y') }}</p>
                                                 </div>
                                                 <div class="col-md-6 d-flex align-items-center mt-2">
                                                     <p class="mb-0 fw-bold flex-shrink-0" style="width: 100px;">Jam</p>

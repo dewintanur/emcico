@@ -107,7 +107,7 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
             Route::get('/booking-list', [BookingController::class, 'index'])->name('fo.bookingList');
         });
 
-        Route::middleware('role:duty_officer,it')->group(function () {
+        Route::middleware('role:front_office,duty_officer,it')->group(function () {
             Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
         });
 

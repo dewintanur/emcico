@@ -115,9 +115,12 @@
                 </div>
                 <div class="modal-body">
                     <ul class=" mb-1">
-                        <li>Peminjam setuju untuk mengembalikan semua pinjaman pada tanggal pengembalian di atas dalam
-                            keadaan baik.</li>
-                        <li>Peminjam menyanggupi penggantian bila terjadi kehilangan dan kerusakan.</li>
+                    <li>Peminjam setuju untuk mengembalikan semua barang yang dipinjam pada tanggal pengembalian yang telah ditentukan dalam keadaan baik dan lengkap.</li>
+  <li>Peminjam bertanggung jawab atas barang yang dipinjam selama masa penggunaan.</li>
+  <li>Segala bentuk kehilangan atau kerusakan barang menjadi tanggung jawab peminjam dan wajib diganti sesuai dengan ketentuan yang berlaku.</li>
+  <li>Barang yang dipinjam hanya digunakan untuk keperluan kegiatan yang telah disetujui.</li>
+  <li>Tidak diperkenankan meminjamkan kembali barang kepada pihak lain tanpa izin resmi dari pihak pengelola.</li>
+  <li>Pengembalian barang dilakukan kepada petugas yang berwenang dengan pengecekan kondisi barang.</li>
                     </ul>
                 </div>
                 <div class="modal-footer text-center">
