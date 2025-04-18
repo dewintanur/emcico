@@ -2,10 +2,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory; // <-- Tambahkan ini
 use App\Models\PeminjamanBarang;
 
 class Booking extends Model
 {
+    use HasFactory; // <-- Tambahkan ini juga
     protected $table = 'booking'; // Sesuaikan dengan nama tabel
     protected $fillable = [
         'kode_booking',

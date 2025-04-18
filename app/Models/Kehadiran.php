@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory; // <-- Tambahkan ini
 
 class Kehadiran extends Model
 {
+    use HasFactory; // <-- Tambahkan ini juga
+
     protected $table = 'kehadiran'; // Sesuaikan dengan nama tabel
     protected $fillable = [
         'kode_booking',

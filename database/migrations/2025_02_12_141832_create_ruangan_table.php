@@ -7,27 +7,27 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Jalankan migrasi.
      */
     public function up(): void
     {
         Schema::create('ruangan', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // bigint unsigned auto_increment
             $table->string('nama_ruangan');
             $table->integer('lantai');
             $table->date('tanggal');
             $table->time('waktu_mulai');
             $table->time('waktu_selesai');
             $table->enum('status', ['Kosong', 'Dipesan', 'Sedang Digunakan']);
-            $table->timestamps();
+            $table->timestamps(); // created_at dan updated_at
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Batalkan migrasi.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ruangans');
+        Schema::dropIfExists('ruangan');
     }
 };

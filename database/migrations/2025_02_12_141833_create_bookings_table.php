@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('kategori_event');
             $table->string('kategori_ekraf');
             $table->string('jenis_event');
-            $table->string('ruangan');
+            $table->unsignedBigInteger('ruangan_id');
             $table->integer('lantai');
             $table->time('waktu_mulai');
             $table->time('waktu_selesai');
