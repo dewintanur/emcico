@@ -15,36 +15,34 @@ class KehadiranControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Default waktu sekarang
-        Carbon::setTestNow(Carbon::createFromTime(10, 0, 0)); // pukul 10:00
+        Carbon::setTestNow(Carbon::createFromTime(10, 0, 0)); // Set waktu sekarang
     }
 
     /** @test */
-    public function user_bisa_check_in_dengan_kode_booking_yang_valid()
+    public function user_can_check_in_with_valid_booking_code()
     {
         $booking = Booking::factory()->create([
             'kode_booking' => 'ABC123',
             'tanggal' => now()->format('Y-m-d'),
         ]);
 
-        $response = $this->post('/check-in', [
+        $response = $this->post(route('proses_checkin'), [
             'kode_booking' => 'ABC123',
-            'nama' => 'Budi',
-            'no_hp' => '08123456789',
+            'nama_ci' => 'Budi',
+            'no_ci' => '08123456789',
             'ttd' => 'data:image/png;base64,somebase64string',
         ]);
 
         $response->assertStatus(302);
         $this->assertDatabaseHas('kehadiran', [
             'kode_booking' => 'ABC123',
-            'nama' => 'Budi',
-            'no_hp' => '08123456789',
+            'nama_ci' => 'Budi',
+            'no_ci' => '08123456789',
         ]);
     }
 
     /** @test */
-    public function check_in_ditolak_jika_sudah_pernah_check_in()
+    public function check_in_fails_if_already_checked_in()
     {
         $booking = Booking::factory()->create([
             'kode_booking' => 'DEF456',
@@ -53,17 +51,17 @@ class KehadiranControllerTest extends TestCase
 
         Kehadiran::create([
             'kode_booking' => 'DEF456',
-            'tanggal' => now()->format('Y-m-d'),
-            'nama' => 'Sari',
-            'no_hp' => '08123456700',
+            'tanggal_ci' => now()->format('Y-m-d'),
+            'nama_ci' => 'Sari',
+            'no_ci' => '08123456700',
             'status' => 'Sedang Digunakan',
             'ttd' => 'data:image/png;base64,ttdsari',
         ]);
 
-        $response = $this->post('/check-in', [
+        $response = $this->post(route('proses_checkin'), [
             'kode_booking' => 'DEF456',
-            'nama' => 'Sari',
-            'no_hp' => '08123456700',
+            'nama_ci' => 'Sari',
+            'no_ci' => '08123456700',
             'ttd' => 'data:image/png;base64,ttdsari',
         ]);
 
@@ -71,12 +69,12 @@ class KehadiranControllerTest extends TestCase
     }
 
     /** @test */
-    public function check_in_ditolak_jika_kode_booking_tidak_ditemukan()
+    public function check_in_fails_if_booking_code_not_found()
     {
-        $response = $this->post('/check-in', [
+        $response = $this->post(route('proses_checkin'), [
             'kode_booking' => 'XYZ999',
-            'nama' => 'Andi',
-            'no_hp' => '081200011122',
+            'nama_ci' => 'Andi',
+            'no_ci' => '081200011122',
             'ttd' => 'data:image/png;base64,fake',
         ]);
 
@@ -84,7 +82,7 @@ class KehadiranControllerTest extends TestCase
     }
 
     /** @test */
-    public function bisa_melihat_riwayat_check_in()
+    public function user_can_view_check_in_history()
     {
         $booking = Booking::factory()->create([
             'kode_booking' => 'HIS123',
@@ -93,14 +91,14 @@ class KehadiranControllerTest extends TestCase
 
         Kehadiran::create([
             'kode_booking' => 'HIS123',
-            'tanggal' => now()->format('Y-m-d'),
-            'nama' => 'Rani',
-            'no_hp' => '08567890987',
+            'tanggal_ci' => now()->format('Y-m-d'),
+            'nama_ci' => 'Rani',
+            'no_ci' => '08567890987',
             'status' => 'Sedang Digunakan',
             'ttd' => 'data:image/png;base64,signaturedata',
         ]);
 
-        $response = $this->get('/riwayat-checkin');
+        $response = $this->get(route('riwayat.checkin'));
 
         $response->assertStatus(200);
         $response->assertSee('HIS123');

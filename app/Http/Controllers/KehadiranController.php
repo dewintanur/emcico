@@ -190,7 +190,7 @@ class KehadiranController extends Controller
         $request->validate([
             'kode_booking' => 'required|exists:booking,kode_booking',
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:12',
+            'phone' => 'required|digits:12',
             'signatureData' => 'required',
         ]);
 

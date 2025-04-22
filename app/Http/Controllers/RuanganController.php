@@ -146,9 +146,22 @@ class RuanganController extends Controller
         // Debug setelah update
         \Log::info('Setelah update:', ['status_konfirmasi' => $kehadiran->status_konfirmasi]);
         $ruangan = Ruangan::find($id);
-// Tambahan: Perbarui status pengembalian barang
-PeminjamanBarang::where('kode_booking', $kehadiran->kode_booking)
-    ->update(['status_pengembalian' => 'Sudah Dikembalikan']);
+// Ambil semua peminjaman barang untuk booking ini
+$peminjamanList = PeminjamanBarang::where('kode_booking', $kehadiran->kode_booking)->get();
+
+foreach ($peminjamanList as $peminjaman) {
+    // Update status pengembalian
+    $peminjaman->status_pengembalian = 'Sudah Dikembalikan';
+    $peminjaman->save();
+
+    // Kembalikan stok barang
+    $barang = $peminjaman->barang;
+    if ($barang) {
+        $barang->jumlah += $peminjaman->jumlah; // tambahkan kembali saat dikembalikan
+        $barang->save();
+    }
+    
+}
 
         // Kirim notifikasi ke FO
         if ($ruangan) {

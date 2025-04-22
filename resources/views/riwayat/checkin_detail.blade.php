@@ -96,6 +96,8 @@
                                             <th>No</th>
                                             <th>Nama Item</th>
                                             <th>Jumlah</th>
+                                            <th>Status Pengembalian</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -104,6 +106,8 @@
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $item->barang->nama_barang }}</td>
                                                 <td>{{ $item->jumlah }}</td>
+                                                <td class="color: {{ $item->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">{{ $item->status_pengembalian ?? 'Belum Dikembalikan' }}</td>
+
                                             </tr>
                                         @endforeach
                                     </tbody>

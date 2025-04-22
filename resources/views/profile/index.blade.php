@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1 class="text-center mb-4">Profil Karyawan</h1>
+    <h1 class="text-center mb-4">Profil Saya</h1>
 
     <div class="card mx-auto p-4 shadow-sm" style="max-width: 800px; border-radius: 12px;">
         <div class="row align-items-center">

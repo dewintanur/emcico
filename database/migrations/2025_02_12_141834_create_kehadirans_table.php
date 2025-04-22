@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('kode_booking');
             $table->string('nama_ci');
             $table->string('no_ci');
-            $table->date('tanggal_ci');
+            $table->date('tanggal_ci')->nullable()->default(now()); // Make nullable or default to now()
             $table->unsignedBigInteger('ruangan_id')->nullable(); // FK ke ruangan
-            $table->integer('lantai');
+            $table->string('lantai')->nullable(); // Make lantai nullable
             $table->text('ttd'); // Tanda tangan
             $table->string('duty_officer');
             $table->enum('status', ['Booked', 'Checked-in', 'Checked-out']);

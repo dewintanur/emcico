@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('peminjaman_barang', function (Blueprint $table) {
             $table->id();
             $table->string('kode_booking');
-            $table->string('nama_barang');
+            $table->string('nama_barang')->nullable();
             $table->integer('jumlah');
             $table->string('marketing');
             $table->string('deleted_by')->nullable();

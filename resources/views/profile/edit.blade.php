@@ -56,19 +56,23 @@
                                value="{{ old('email', Auth::user()->email) }}" required>
                     </div>
 
-                    <!-- Password Baru -->
-                    <div class="mb-3">
+                    <div class="mb-3 position-relative">
                         <label class="form-label fw-bold">Password Baru (Opsional)</label>
-                        <input type="password" class="form-control" name="password">
-                        <small class="text-muted">Kosongkan jika tidak ingin mengubah password.</small>
+                        <input type="password" class="form-control" id="newPassword" name="password">
+                        <i class="fas fa-eye position-absolute" onclick="togglePassword('newPassword', this)"
+                        style="top: 38px; right: 10px; cursor: pointer; position: absolute;"></i>
+                        <small class="text-muted">Isi jika ingin merubah password.</small>
                     </div>
 
-                    <!-- Konfirmasi Password -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Konfirmasi Password</label>
-                        <input type="password" class="form-control" name="password_confirmation">
-                        <small class="text-muted">Wajib diisi jika mengganti password.</small>
-                    </div>
+
+                    <div class="mb-3 position-relative">
+    <label class="form-label fw-bold">Konfirmasi Password</label>
+    <input type="password" class="form-control" id="confirmPassword" name="password_confirmation">
+    <i class="fas fa-eye position-absolute" onclick="togglePassword('confirmPassword', this)"
+       style="top: 38px; right: 10px; cursor: pointer; position: absolute;"></i>
+    <small class="text-muted">konfirmasi password baru</small>
+</div>
+
 
                     <!-- Tombol Simpan -->
                     <div class="d-grid">
@@ -92,6 +96,20 @@
             reader.readAsDataURL(file);
         }
     });
+    function togglePassword(fieldId, icon) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            field.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
+
 </script>
 
 @endsection

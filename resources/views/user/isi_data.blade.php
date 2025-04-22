@@ -21,12 +21,24 @@
                         style="border-radius: 15px; border-color:var(--bs-secondary);background-color: var(--bs-secondary);"
                         required>
                 </div>
-                <div class="mb-3 d-flex align-items-center">
-                    <label for="phone" class="form-label me-3" style="width: 150px;">No Telepon</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" required maxlength="12"
-                        style="border-radius: 15px;border-color:var(--bs-secondary); background-color: var(--bs-secondary);"
-                        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                </div>
+                <div class="mb-3">
+    <div class="d-flex align-items-center">
+        <label for="phone" class="form-label me-3" style="width: 150px;">No Telepon</label>
+        <input type="tel" class="form-control" id="phone" name="phone"
+            required minlength="12" maxlength="12"
+            pattern="\d{12}"
+            title="Nomor harus terdiri dari 12 angka"
+            style="border-radius: 15px; border-color:var(--bs-secondary); background-color: var(--bs-secondary);"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+
+    <!-- Pesan error berada di bawah form input, sejajar dengan input -->
+    <small id="phoneError" class="text-warning d-none" style="font-size: 12px; padding-left: 130px;">
+    Nomor HP harus 12 digit
+    </small>
+</div>
+
+
 
                 <h5 class="mb-3 mt-4 text-center fw-bold" style="font-size: 18px; color: var(--bs-primary);">Detail Booking</h5>
                 <div class="card p-3 mb-4 text-center mx-auto" style="border-radius: 15px; width:300px; font-size: 16px;">
@@ -140,6 +152,24 @@
             }
         });
     });
+    document.addEventListener("DOMContentLoaded", function () {
+    const phoneInput = document.getElementById('phone');
+    const phoneError = document.getElementById('phoneError');
+
+    if (phoneInput && phoneError) {
+        phoneInput.addEventListener('input', function () {
+            const value = this.value.replace(/[^0-9]/g, '');
+            this.value = value.slice(0, 12);
+
+            if (this.value.length < 12) {
+                phoneError.classList.remove('d-none');
+            } else {
+                phoneError.classList.add('d-none');
+            }
+        });
+    }
+});
+
 </script>
 @endpush
 
