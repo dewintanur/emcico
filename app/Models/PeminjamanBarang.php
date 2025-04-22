@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Booking;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PeminjamanBarang extends Model
 {
+    use HasFactory;
+
     use SoftDeletes; // Tambahkan ini
 
     protected $table = 'peminjaman_barang'; // Sesuaikan dengan nama tabel
@@ -18,6 +21,7 @@ class PeminjamanBarang extends Model
         'marketing', // Tambahkan ini
         'created_by',
         'deleted_by',
+        'status_pengembalian'
     ];
     
     public function booking()

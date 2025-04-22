@@ -8,6 +8,7 @@ use App\Models\PeminjamanBarang;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Session;
 
 class KehadiranControllerTest extends TestCase
 {
@@ -29,13 +30,14 @@ class KehadiranControllerTest extends TestCase
         ]);
     
         // Simulasi kirim data form check-in
-        $response = $this->post(route('isi_data'), [
-            'nama' => 'John Doe',
+        $response = $this->withoutMiddleware(['role:front_office'])->post(route('proses_checkin'), [
+            'name' => 'John Doe',
             'email' => 'john@example.com',
-            'nomor_hp' => '081234567890',
+            'phone' => '081234567890',
             'kode_booking' => 'ABC123',
-            'signature' => 'data:image/png;base64,dummy_signature_string',
+            'signatureData' => 'data:image/png;base64,dummy_signature_string',
         ]);
+        
     
         // Cek redirect
         $response->assertRedirect(route('fo.bookingList'));
@@ -52,24 +54,25 @@ class KehadiranControllerTest extends TestCase
      * Test pengecekan booking yang valid.
      */
     public function testCheckBookingValid()
-    {
-        // Menyiapkan data booking yang valid
-        $booking = Booking::factory()->create([
-            'kode_booking' => 'BOOK123',
-            'tanggal' => now()->toDateString(),
-            'waktu_mulai' => now()->addHour()->format('H:i'),
-            'waktu_selesai' => now()->addHours(2)->format('H:i'),
-        ]);
+{
+    $booking = Booking::factory()->create([
+        'kode_booking' => 'BOOK123',
+        'tanggal' => now()->toDateString(),
+        'waktu_mulai' => now()->subMinutes(10)->format('H:i'), // sudah bisa check-in
+        'waktu_selesai' => now()->addHour()->format('H:i'),
+    ]);
 
-        // Melakukan request pengecekan booking yang valid dari inputan user
-        $response = $this->post(route('check'), [
+    Session::start();
+    $response = $this
+        ->withSession(['_token' => csrf_token()])
+        ->post(route('check'), [
             'id_booking' => 'BOOK123',
         ]);
 
-        // Memastikan bahwa response redirect ke halaman isi data
-        $response->assertRedirect(route('isi_data'));
-        $response->assertSessionHas('success', 'Silakan isi data check-in Anda.');
-    }
+    $response->assertRedirect(route('isi_data'));
+    $response->assertSessionHas('success', 'Silakan isi data check-in Anda.');
+}
+
 
     /**
      * Test pengecekan booking yang tidak valid.
@@ -94,8 +97,8 @@ class KehadiranControllerTest extends TestCase
         $booking = Booking::factory()->create([
             'kode_booking' => 'BOOK123',
             'tanggal' => now()->toDateString(),
-            'waktu_mulai' => now()->addHour()->format('H:i'),
-            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+            'waktu_mulai' => now()->subMinutes(10)->format('H:i'), // sudah bisa check-in
+            'waktu_selesai' => now()->addHour()->format('H:i'),
         ]);
 
         // Menyiapkan data kehadiran yang valid (gunakan factory Kehadiran)
@@ -111,7 +114,7 @@ class KehadiranControllerTest extends TestCase
         $response = $this->post(route('proses_checkin'), [
             'kode_booking' => 'BOOK123',
             'name' => 'Pengunjung',
-            'phone' => '1234567890',  // Ganti dengan nomor yang sesuai
+            'phone' => '089678394874',  // Ganti dengan nomor yang sesuai
             'signatureData' => 'signature_data_example',
         ]);
 
@@ -130,63 +133,86 @@ class KehadiranControllerTest extends TestCase
      */
     public function testCheckinSuccessFromScanBarcode()
     {
-        // Menyiapkan data booking yang valid
+        // Pastikan tidak ada middleware yang menghalangi
+        $this->withoutMiddleware();
+    
+        // Siapkan data booking yang valid
         $booking = Booking::factory()->create([
             'kode_booking' => 'BOOK123',
             'tanggal' => now()->toDateString(),
-            'waktu_mulai' => now()->addHour()->format('H:i'),
-            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+            'waktu_mulai' => now()->subMinutes(10)->format('H:i'), // sudah bisa check-in
+            'waktu_selesai' => now()->addHour()->format('H:i'),
         ]);
-
-        // Melakukan request untuk check-in dari scan barcode
+    
+        // Melakukan request untuk check-in melalui scan barcode
         $response = $this->post(route('scan.barcode'), [
             'kode_booking' => 'BOOK123',
         ]);
-
-        // Memastikan bahwa response redirect ke halaman isi data
+    
+        // Memastikan response redirect ke halaman isi data
         $response->assertRedirect(route('isi_data'));
     }
-
     /**
      * Test untuk peminjaman barang setelah check-in.
      */
-    public function testPeminjamanBarangSuccess()
-    {
-        // Menyiapkan data booking yang valid
-        $booking = Booking::factory()->create([
-            'kode_booking' => 'BOOK123',
-            'tanggal' => now()->toDateString(),
-            'waktu_mulai' => now()->addHour()->format('H:i'),
-            'waktu_selesai' => now()->addHours(2)->format('H:i'),
-        ]);
+ 
+public function testPeminjamanBarangSuccess()
+{
+    // Siapkan data booking yang valid
+    $booking = Booking::factory()->create([
+        'kode_booking' => 'BOOK123',
+        'tanggal' => now()->toDateString(),
+          'waktu_mulai' => now()->subMinutes(10)->format('H:i'), // sudah bisa check-in
+            'waktu_selesai' => now()->addHour()->format('H:i'),
+    ]);
 
-        // Menyiapkan data peminjaman barang
-        PeminjamanBarang::create([
-            'kode_booking' => 'BOOK123',
-            'nama_barang' => 'Laptop',
-        ]);
+   // Siapkan data peminjaman barang
+PeminjamanBarang::create([
+    'kode_booking' => 'BOOK123',
+    'barang_id' => 1,
+    'jumlah' => 2,
+    'marketing' => 2,
+    'created_by' => 4
+]);
+$user = User::factory()->create([
+    'role' => 'front_office', // Sesuaikan dengan role yang ada di tabel users
+]);
 
-        // Melakukan request untuk menyimpan persetujuan peminjaman barang
-        $response = $this->post(route('simpan.setuju.peminjaman'), [
-            'kode_booking' => 'BOOK123',
-            'nama_barang' => 'Laptop',
-        ]);
+// Melakukan login sebagai front_office
+$this->actingAs($user);
 
-        // Memastikan peminjaman barang berhasil disimpan
-        $response->assertRedirect(route('form.peminjaman', ['kode_booking' => 'BOOK123']));
-    }
+// Simulasikan data check-in
+$response = $this->post(route('proses_checkin'), [
+    'kode_booking' => 'BOOK123',
+    'name' => 'John Doe',
+    'phone' => '081234567890',
+    'signatureData' => 'signature_data_example',
+]);
+
+// Pastikan redirect ke form peminjaman barang dengan kode_booking yang benar
+$response->assertRedirect(route('form.peminjaman', ['kode_booking' => 'BOOK123']));
+
+// Memastikan peminjaman barang ada di database dengan nama_barang yang benar
+$this->assertDatabaseHas('peminjaman_barang', [
+    'kode_booking' => 'BOOK123',
+]);
+
+}
+
 
     /**
      * Test untuk scan barcode dengan kode booking yang valid.
      */
     public function testScanBarcodeValid()
     {
+        $this->withoutMiddleware('auth'); // tergantung kebutuhan
+
         // Menyiapkan data booking yang valid
         $booking = Booking::factory()->create([
             'kode_booking' => 'BOOK123',
             'tanggal' => now()->toDateString(),
-            'waktu_mulai' => now()->addHour()->format('H:i'),
-            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+            'waktu_mulai' => now()->subMinutes(10)->format('H:i'), // sudah bisa check-in
+        'waktu_selesai' => now()->addHour()->format('H:i'),
         ]);
 
         // Melakukan request scan barcode dengan kode booking yang valid

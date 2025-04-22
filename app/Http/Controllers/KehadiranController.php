@@ -360,7 +360,11 @@ class KehadiranController extends Controller
         if (!$kehadiran) {
             return redirect()->back()->with('error', 'Data check-in tidak ditemukan.');
         }
-    
+      // Cek apakah duty officer sudah mengonfirmasi
+      if (is_null($kehadiran->duty_officer)) {
+        // Jika duty officer belum mengonfirmasi, tampilkan pesan error
+        return redirect()->back()->with('error', 'Ruangan belum dikonfirmasi, check-out ditunda');
+    }
         // Simpan FO yang melakukan checkout
         if (auth()->check() && auth()->user()->role === 'front_office') {
             $kehadiran->fo_id = auth()->id();

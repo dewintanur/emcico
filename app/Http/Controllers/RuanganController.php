@@ -199,7 +199,8 @@ foreach ($peminjamanList as $peminjaman) {
             return back()->with('success', 'Status ruangan diperbarui menjadi Belum Siap Check-Out.');
         }
     
-        return back()->with('error', 'Akses ditolak.');
+        return back()->with('error', 'User perlu Kembali ke ruangan');
+
     }
     public function showImportForm()
     {

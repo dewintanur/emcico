@@ -83,10 +83,14 @@ class ProfileController extends Controller
     
             $user->save();
             Log::info('Profil berhasil diperbarui untuk user: ' . $user->id);
-        } catch (\Exception $e) {
+        } // Bagian dalam catch Exception
+        catch (\Exception $e) {
             Log::error('Gagal menyimpan profil: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menyimpan profil');
+            // Menambahkan return dengan error lebih eksplisit
+            return back()->with('error', 'Gagal menyimpan profil, silakan coba lagi.');
+                
         }
+        
     
         return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui');
     }
