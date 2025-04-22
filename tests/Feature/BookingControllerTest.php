@@ -35,6 +35,7 @@ class BookingControllerTest extends TestCase
             'email' => 'test@example.com',
             'alamat' => 'Jalan Uji Coba No. 1',
             'ttd' => 'data:image/png;base64,somebase64string',
+            'duty_officer' => 'Petugas 1',
         ]);
 
         // Assert
@@ -42,6 +43,7 @@ class BookingControllerTest extends TestCase
         $this->assertDatabaseHas('kehadiran', [
             'kode_booking' => 'ABC123',
             'nama_ci' => 'Test User',
+            'status' => 'Booked',  // Pastikan status yang sesuai
         ]);
     }
 
@@ -56,6 +58,7 @@ class BookingControllerTest extends TestCase
             'email' => 'test@example.com',
             'alamat' => 'Jalan Uji Coba No. 1',
             'ttd' => 'data:image/png;base64,somebase64string',
+            'duty_officer' => 'Petugas 2',
         ]);
 
         $response->assertStatus(302);
@@ -71,12 +74,12 @@ class BookingControllerTest extends TestCase
 
         Kehadiran::create([
             'kode_booking' => 'DEF456',
+            'tanggal_ci' => now()->format('Y-m-d'),
             'nama_ci' => 'Test User',
             'no_ci' => '08123456789',
-            'instansi' => 'Universitas Testing',
-            'email' => 'test@example.com',
-            'alamat' => 'Jalan Uji Coba No. 1',
+            'status' => 'Checked-in', // Pastikan status sudah sesuai
             'ttd' => 'data:image/png;base64,fakeimage',
+            'duty_officer' => 'Petugas 3',
         ]);
 
         $response = $this->post(route('proses_checkin'), [
@@ -87,6 +90,7 @@ class BookingControllerTest extends TestCase
             'email' => 'test@example.com',
             'alamat' => 'Jalan Uji Coba No. 1',
             'ttd' => 'data:image/png;base64,fakeimage',
+            'duty_officer' => 'Petugas 3',
         ]);
 
         $response->assertStatus(302);

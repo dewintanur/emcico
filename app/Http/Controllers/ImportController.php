@@ -23,7 +23,7 @@ class ImportController extends Controller
     {
         // Validasi file CSV
         $request->validate([
-            'file' => 'required|mimes:csv,txt',
+            'file' => 'required|mimes:csv',
         ]);
 
         // Mengimpor file CSV

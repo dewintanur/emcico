@@ -19,10 +19,10 @@ return new class extends Migration
             $table->date('tanggal_ci')->nullable()->default(now()); // Make nullable or default to now()
             $table->unsignedBigInteger('ruangan_id')->nullable(); // FK ke ruangan
             $table->string('lantai')->nullable(); // Make lantai nullable
-            $table->text('ttd'); // Tanda tangan
-            $table->string('duty_officer');
+            $table->string('ttd')->nullable(); // Bisa null jika tidak wajib
+            $table->string('duty_officer')->nullable(); // Bisa null jika tidak wajib
             $table->enum('status', ['Booked', 'Checked-in', 'Checked-out']);
-            $table->enum('status_konfirmasi', ['belum_dikonfirmasi', 'siap_checkout'])->default('belum_dikonfirmasi');
+            $table->enum('status_konfirmasi', ['belum_konfirmasi', 'belum_siap_checkout', 'siap_checkout']);
             $table->unsignedBigInteger('fo_id')->nullable(); // FK ke users
             $table->timestamps();
 

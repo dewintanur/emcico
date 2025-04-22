@@ -79,12 +79,13 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
     });
 
     // **🔴 IT Admin (Full Akses)**
-    Route::middleware('role:it')->group(function () {
+    Route::middleware('role:it,admin')->group(function () { // Tambahkan admin di sini
         Route::get('/it', [UserController::class, 'index'])->name('users.index');
         Route::get('/it/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/store', [UserController::class, 'store'])->name('users.store');
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
         Route::get('/generate-barcode', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/generate-barcode', [BarcodeController::class, 'generateAndSend'])->name('barcode.send');

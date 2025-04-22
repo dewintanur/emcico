@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_barang');
             $table->integer('jumlah');
+            $table->string('satuan'); // Tambahkan kolom 'satuan' setelah kolom 'jumlah'
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('list_barangs');
+        Schema::dropIfExists('list_barang');
     }
 };

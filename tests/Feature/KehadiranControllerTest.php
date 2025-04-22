@@ -2,106 +2,214 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Booking;
 use App\Models\Kehadiran;
-use Carbon\Carbon;
+use App\Models\PeminjamanBarang;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class KehadiranControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    public function test_isi_data_berhasil()
     {
-        parent::setUp();
-        Carbon::setTestNow(Carbon::createFromTime(10, 0, 0)); // Set waktu sekarang
-    }
-
-    /** @test */
-    public function user_can_check_in_with_valid_booking_code()
-    {
+        // Membuat user dengan role Front Office
+        $user = User::factory()->create([
+            'role' => 'front_office', // Sesuaikan dengan nama role yang ada di tabel users
+        ]);
+    
+        // Melakukan login sebagai Front Office
+        $this->actingAs($user);
+    
+        // Buat booking palsu
         $booking = Booking::factory()->create([
             'kode_booking' => 'ABC123',
-            'tanggal' => now()->format('Y-m-d'),
         ]);
-
-        $response = $this->post(route('proses_checkin'), [
+    
+        // Simulasi kirim data form check-in
+        $response = $this->post(route('isi_data'), [
+            'nama' => 'John Doe',
+            'email' => 'john@example.com',
+            'nomor_hp' => '081234567890',
             'kode_booking' => 'ABC123',
-            'nama_ci' => 'Budi',
-            'no_ci' => '08123456789',
-            'ttd' => 'data:image/png;base64,somebase64string',
+            'signature' => 'data:image/png;base64,dummy_signature_string',
         ]);
-
-        $response->assertStatus(302);
+    
+        // Cek redirect
+        $response->assertRedirect(route('fo.bookingList'));
+    
+        // Cek kehadiran masuk database
         $this->assertDatabaseHas('kehadiran', [
+            'nama_ci' => 'John Doe',  // Sesuaikan dengan kolom yang ada di tabel kehadiran
+            'no_ci' => '081234567890',
             'kode_booking' => 'ABC123',
-            'nama_ci' => 'Budi',
-            'no_ci' => '08123456789',
         ]);
     }
-
-    /** @test */
-    public function check_in_fails_if_already_checked_in()
+    
+    /**
+     * Test pengecekan booking yang valid.
+     */
+    public function testCheckBookingValid()
     {
+        // Menyiapkan data booking yang valid
         $booking = Booking::factory()->create([
-            'kode_booking' => 'DEF456',
-            'tanggal' => now()->format('Y-m-d'),
+            'kode_booking' => 'BOOK123',
+            'tanggal' => now()->toDateString(),
+            'waktu_mulai' => now()->addHour()->format('H:i'),
+            'waktu_selesai' => now()->addHours(2)->format('H:i'),
         ]);
 
-        Kehadiran::create([
-            'kode_booking' => 'DEF456',
-            'tanggal_ci' => now()->format('Y-m-d'),
-            'nama_ci' => 'Sari',
-            'no_ci' => '08123456700',
-            'status' => 'Sedang Digunakan',
-            'ttd' => 'data:image/png;base64,ttdsari',
+        // Melakukan request pengecekan booking yang valid dari inputan user
+        $response = $this->post(route('check'), [
+            'id_booking' => 'BOOK123',
         ]);
 
-        $response = $this->post(route('proses_checkin'), [
-            'kode_booking' => 'DEF456',
-            'nama_ci' => 'Sari',
-            'no_ci' => '08123456700',
-            'ttd' => 'data:image/png;base64,ttdsari',
-        ]);
-
-        $response->assertSessionHasErrors(['kode_booking']);
+        // Memastikan bahwa response redirect ke halaman isi data
+        $response->assertRedirect(route('isi_data'));
+        $response->assertSessionHas('success', 'Silakan isi data check-in Anda.');
     }
 
-    /** @test */
-    public function check_in_fails_if_booking_code_not_found()
+    /**
+     * Test pengecekan booking yang tidak valid.
+     */
+    public function testCheckBookingInvalid()
     {
-        $response = $this->post(route('proses_checkin'), [
-            'kode_booking' => 'XYZ999',
-            'nama_ci' => 'Andi',
-            'no_ci' => '081200011122',
-            'ttd' => 'data:image/png;base64,fake',
+        // Melakukan request pengecekan booking yang tidak valid
+        $response = $this->post(route('check'), [
+            'id_booking' => 'INVALID123',
         ]);
 
-        $response->assertSessionHasErrors(['kode_booking']);
+        // Memastikan bahwa response error dengan pesan yang sesuai
+        $response->assertSessionHas('gagal', 'Kode booking tidak ditemukan atau tidak berlaku.');
     }
 
-    /** @test */
-    public function user_can_view_check_in_history()
+    /**
+     * Test untuk memverifikasi check-in berhasil dari bookinglist.
+     */
+    public function testCheckinSuccessFromBookingList()
     {
+        // Menyiapkan data booking yang valid
         $booking = Booking::factory()->create([
-            'kode_booking' => 'HIS123',
-            'tanggal' => now()->format('Y-m-d'),
+            'kode_booking' => 'BOOK123',
+            'tanggal' => now()->toDateString(),
+            'waktu_mulai' => now()->addHour()->format('H:i'),
+            'waktu_selesai' => now()->addHours(2)->format('H:i'),
         ]);
 
-        Kehadiran::create([
-            'kode_booking' => 'HIS123',
-            'tanggal_ci' => now()->format('Y-m-d'),
-            'nama_ci' => 'Rani',
-            'no_ci' => '08567890987',
-            'status' => 'Sedang Digunakan',
-            'ttd' => 'data:image/png;base64,signaturedata',
+        // Menyiapkan data kehadiran yang valid (gunakan factory Kehadiran)
+        $kehadiran = Kehadiran::factory()->create([
+            'kode_booking' => $booking->kode_booking,
+            'nama_ci' => 'Pengunjung',
+            'no_ci' => '1234567890',
+            'ttd' => 'signature_data_example',
+            'status' => 'Checked-in',
         ]);
 
-        $response = $this->get(route('riwayat.checkin'));
+        // Melakukan request untuk check-in dari halaman booking list
+        $response = $this->post(route('proses_checkin'), [
+            'kode_booking' => 'BOOK123',
+            'name' => 'Pengunjung',
+            'phone' => '1234567890',  // Ganti dengan nomor yang sesuai
+            'signatureData' => 'signature_data_example',
+        ]);
 
-        $response->assertStatus(200);
-        $response->assertSee('HIS123');
-        $response->assertSee('Rani');
+        // Memastikan bahwa check-in berhasil dan disimpan
+        $response->assertRedirect('/');
+        $response->assertSessionHas('success', 'Check-in berhasil!');
+        $this->assertDatabaseHas('kehadiran', [
+            'kode_booking' => 'BOOK123',
+            'nama_ci' => 'Pengunjung',
+            'status' => 'Checked-in',
+        ]);
+    }
+
+    /**
+     * Test untuk memverifikasi check-in berhasil dari scan barcode.
+     */
+    public function testCheckinSuccessFromScanBarcode()
+    {
+        // Menyiapkan data booking yang valid
+        $booking = Booking::factory()->create([
+            'kode_booking' => 'BOOK123',
+            'tanggal' => now()->toDateString(),
+            'waktu_mulai' => now()->addHour()->format('H:i'),
+            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+        ]);
+
+        // Melakukan request untuk check-in dari scan barcode
+        $response = $this->post(route('scan.barcode'), [
+            'kode_booking' => 'BOOK123',
+        ]);
+
+        // Memastikan bahwa response redirect ke halaman isi data
+        $response->assertRedirect(route('isi_data'));
+    }
+
+    /**
+     * Test untuk peminjaman barang setelah check-in.
+     */
+    public function testPeminjamanBarangSuccess()
+    {
+        // Menyiapkan data booking yang valid
+        $booking = Booking::factory()->create([
+            'kode_booking' => 'BOOK123',
+            'tanggal' => now()->toDateString(),
+            'waktu_mulai' => now()->addHour()->format('H:i'),
+            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+        ]);
+
+        // Menyiapkan data peminjaman barang
+        PeminjamanBarang::create([
+            'kode_booking' => 'BOOK123',
+            'nama_barang' => 'Laptop',
+        ]);
+
+        // Melakukan request untuk menyimpan persetujuan peminjaman barang
+        $response = $this->post(route('simpan.setuju.peminjaman'), [
+            'kode_booking' => 'BOOK123',
+            'nama_barang' => 'Laptop',
+        ]);
+
+        // Memastikan peminjaman barang berhasil disimpan
+        $response->assertRedirect(route('form.peminjaman', ['kode_booking' => 'BOOK123']));
+    }
+
+    /**
+     * Test untuk scan barcode dengan kode booking yang valid.
+     */
+    public function testScanBarcodeValid()
+    {
+        // Menyiapkan data booking yang valid
+        $booking = Booking::factory()->create([
+            'kode_booking' => 'BOOK123',
+            'tanggal' => now()->toDateString(),
+            'waktu_mulai' => now()->addHour()->format('H:i'),
+            'waktu_selesai' => now()->addHours(2)->format('H:i'),
+        ]);
+
+        // Melakukan request scan barcode dengan kode booking yang valid
+        $response = $this->post(route('scan.barcode'), [
+            'kode_booking' => 'BOOK123',
+        ]);
+
+        // Memastikan bahwa response redirect ke halaman isi data
+        $response->assertRedirect(route('isi_data'));
+    }
+
+    /**
+     * Test untuk scan barcode dengan kode booking tidak valid.
+     */
+    public function testScanBarcodeInvalid()
+    {
+        // Melakukan request scan barcode dengan kode booking yang tidak valid
+        $response = $this->post(route('scan.barcode'), [
+            'kode_booking' => 'INVALID123',
+        ]);
+
+        // Memastikan response error dengan pesan yang sesuai
+        $response->assertStatus(404);
+        $response->assertJson(['status' => 'error', 'message' => 'Kode booking tidak ditemukan atau tidak berlaku untuk hari ini.']);
     }
 }

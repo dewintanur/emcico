@@ -54,20 +54,19 @@ class LoginController extends Controller
                case 'marketing':
                    return redirect()->route('marketing.peminjaman')->with('success', 'Login berhasil');
                case 'it':
+               case 'admin':  // Gabungkan admin dengan it
                    return redirect()->route('users.index')->with('success', 'Login berhasil');
                case 'produksi':
                    return redirect()->route('produksi.peminjaman')->with('success', 'Login berhasil');
                case 'duty_officer':
                    return redirect()->route('ruangan.index')->with('success', 'Login berhasil');
-               case 'admin':
-                   return redirect()->route('admin.dashboard')->with('success', 'Login berhasil');
                default:
                    return redirect('/')->with('success', 'Login berhasil');
            }
        }
 
-       return back()->with('error', 'Email atau password salah');
-   }
+       return redirect()->route('login.form')->with('error', 'Email atau password salah');
+    }
 
    // Proses logout
    public function logout()

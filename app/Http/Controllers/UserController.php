@@ -86,6 +86,18 @@ class UserController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat memperbarui user.');
         }
     }
-   
+    public function destroy($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+    
+            return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        } catch (\Exception $e) {
+            \Log::error('Gagal menghapus user', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Terjadi kesalahan saat menghapus user.');
+        }
+    }
+    
 }
 

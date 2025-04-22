@@ -52,7 +52,12 @@ class KehadiranController extends Controller
         if ($sudahCheckin) {
             return back()->with('gagal', 'Anda sudah melakukan check-in hari ini.');
         }
-    
+         // Menambahkan log untuk melihat URL yang dihasilkan saat redirect
+         Log::info('Redirecting to isi_data route', [
+            'route' => route('isi_data'), 
+            'booking' => $booking
+        ]);
+
         return redirect()->route('isi_data')->with([
             'success' => 'Silakan isi data check-in Anda.',
             'booking' => $booking
@@ -114,6 +119,11 @@ class KehadiranController extends Controller
         'aktivitas' => 'Melakukan check-in',
         'waktu' => Carbon::now(),
     ]);
+     // Menambahkan log untuk melihat URL yang dihasilkan saat redirect
+     Log::info('Redirecting to isi_data route', [
+        'route' => route('isi_data'), 
+        'booking' => $booking
+    ]);
 
     return redirect()->route('isi_data')->with([
         'success' => 'Silakan isi data check-in Anda.',
@@ -158,7 +168,11 @@ class KehadiranController extends Controller
                 'booking' => $booking,
                 'success' => 'Silakan isi data check-in Anda.'
             ]);
-        
+        // Menambahkan log untuk melihat URL yang dihasilkan saat redirect
+        Log::info('Redirecting to isi_data route from scanBarcode', [
+            'route' => route('isi_data'),
+            'booking' => $booking
+        ]);
             return redirect()->route('isi_data')->with([
                 'success' => 'Silakan isi data check-in Anda.',
                 'booking' => $booking

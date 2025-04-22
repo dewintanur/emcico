@@ -30,7 +30,13 @@ class UserFactory extends Factory
             'role' => 'front_office', // Tambahkan biar cocok sama test
         ];
     }
-
+    public function adminUser()
+    {
+        return User::factory()->create([
+            'role' => 'admin', // Sesuaikan role admin
+        ]);
+    }
+    
     /**
      * Indicate that the model's email address should be unverified.
      */
