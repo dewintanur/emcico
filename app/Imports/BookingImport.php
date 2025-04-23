@@ -8,52 +8,50 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class BookingImport implements ToModel
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+
+class BookingImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
         try {
-            // Import data booking
             $booking = new Booking([
-                'kode_booking' => $row[0],
-                'tanggal' => Carbon::parse($row[1])->format('Y-m-d'),
-                'nama_event' => $row[2],
-                'nama_organisasi' => $row[3],
-                'kategori_event' => $row[4],
-                'kategori_ekraf' => $row[5],
-                'jenis_event' => $row[6],
-                'ruangan_id' => (int) $row[7],  
-                'lantai' => (int) $row[8],
-                'waktu_mulai' => $row[9],
-                'waktu_selesai' => $row[10],
-                'nama_pic' => $row[11],
-                'no_pic' => $row[12],
-                'status' => in_array($row[13], ['Booking', 'Approved', 'Rejected']) ? $row[13] : 'Booking',
-                'created_at' => Carbon::parse($row[14])->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::parse($row[15])->format('Y-m-d H:i:s'),
+                'kode_booking' => $row['kode_booking'],
+                'tanggal' => Carbon::parse($row['tanggal'])->format('Y-m-d'),
+                'nama_event' => $row['nama_event'],
+                'nama_organisasi' => $row['nama_organisasi'],
+                'kategori_event' => $row['kategori_event'],
+                'kategori_ekraf' => $row['kategori_ekraf'],
+                'jenis_event' => $row['jenis_event'],
+                'ruangan_id' => (int) $row['ruangan_id'],
+                'lantai' => (int) $row['lantai'],
+                'waktu_mulai' => $row['waktu_mulai'],
+                'waktu_selesai' => $row['waktu_selesai'],
+                'nama_pic' => $row['nama_pic'],
+                'no_pic' => $row['no_pic'],
+                'status' => in_array($row['status'], ['Booking', 'Approved', 'Rejected']) ? $row['status'] : 'Booking',
+                'created_at' => Carbon::parse($row['created_at'])->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::parse($row['updated_at'])->format('Y-m-d H:i:s'),
             ]);
 
             $booking->save();
 
-            // Cek apakah ada barang yang dipinjam (Kolom Barang di Excel)
-            if (!empty($row[16]) && !empty($row[17])) { // Kolom ke-16 = barang_id, ke-17 = jumlah
-                $barang = ListBarang::find($row[16]);
+            if (!empty($row['barang_id']) && !empty($row['jumlah'])) {
+                $barang = ListBarang::find($row['barang_id']);
 
-                if ($barang && $barang->jumlah >= (int) $row[17]) {
-                    // Kurangi stok barang
-                    $barang->jumlah -= (int) $row[17];
+                if ($barang && $barang->jumlah >= (int) $row['jumlah']) {
+                    $barang->jumlah -= (int) $row['jumlah'];
                     $barang->save();
 
-                    // Simpan peminjaman barang
                     PeminjamanBarang::create([
-                        'kode_booking' => $row[0],
-                        'barang_id' => (int) $row[16],
-                        'jumlah' => (int) $row[17],
-                        'marketing' => $row[18] ?? 'Tidak Diketahui',
+                        'kode_booking' => $row['kode_booking'],
+                        'barang_id' => (int) $row['barang_id'],
+                        'jumlah' => (int) $row['jumlah'],
+                        'marketing' => $row['marketing'] ?? 'Tidak Diketahui',
                         'created_by' => auth()->id(),
                     ]);
                 } else {
-                    Log::warning("Stok barang tidak mencukupi untuk booking {$row[0]}");
+                    Log::warning("Stok barang tidak mencukupi untuk booking {$row['kode_booking']}");
                 }
             }
 

@@ -159,6 +159,12 @@ foreach ($peminjamanList as $peminjaman) {
     if ($barang) {
         $barang->jumlah += $peminjaman->jumlah; // tambahkan kembali saat dikembalikan
         $barang->save();
+        \Log::info('Pengembalian Barang:', [
+            'kode_booking' => $kehadiran->kode_booking,
+            'barang_id'    => $barang->id,
+            'jumlah_dikembalikan' => $peminjaman->jumlah,
+            'stok_terbaru' => $barang->jumlah
+        ]);
     }
     
 }
