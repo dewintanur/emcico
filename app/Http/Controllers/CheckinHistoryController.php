@@ -56,6 +56,7 @@ public function exportPdf(Request $request)
     }
 
     $kehadiran = Kehadiran::with([
+        'booking',            // ⬅️ Tambahkan ini untuk jaga-jaga
         'booking.ruangan', 
         'booking.peminjaman'
     ])->when($tanggal, function ($query) use ($tanggal) {

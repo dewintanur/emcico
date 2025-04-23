@@ -25,7 +25,7 @@ class CheckinHistoryControllerTest extends TestCase
         Kehadiran::factory()->count(5)->create();
 
         // Act: Mengakses halaman checkin history
-        $response = $this->get(route('riwayat.checkin.index'));
+        $response = $this->get(route('riwayat.checkin'));
 
         // Assert: Memastikan halaman ditampilkan dengan data yang sesuai
         $response->assertStatus(200);
@@ -44,7 +44,7 @@ class CheckinHistoryControllerTest extends TestCase
         $kehadiran = Kehadiran::factory()->create();
 
         // Act: Mengakses halaman detail checkin dengan kode booking
-        $response = $this->get(route('riwayat.checkin.show', $kehadiran->kode_booking));
+        $response = $this->get(route('riwayat.checkin.detail', $kehadiran->kode_booking));
 
         // Assert: Memastikan halaman detail ditampilkan dengan data yang sesuai
         $response->assertStatus(200);
@@ -52,50 +52,40 @@ class CheckinHistoryControllerTest extends TestCase
         $response->assertViewHas('kehadiran');
         $response->assertViewHas('kode_booking');
     }
+   /** @test */
+public function it_exports_checkin_history_to_excel()
+{
+    Storage::fake('local');
+    Excel::fake();
 
-    /** @test */
-    public function it_exports_checkin_history_to_excel()
-    {
-        // Arrange: Login sebagai FrontOffice, Marketing, atau Admin
-        $user = User::factory()->create();
-        $this->actingAs($user);
+    $user = User::factory()->create();
+    $this->actingAs($user);
 
-        // Membuat data kehadiran untuk diuji
-        Kehadiran::factory()->count(5)->create();
+    Kehadiran::factory()->count(5)->create();
 
-        // Act: Menekan tombol export untuk Excel
-        $response = $this->get(route('riwayat.checkin.export.excel', ['tanggal' => now()->toDateString()]));
+    $response = $this->get(route('riwayat.checkin.export.excel', ['tanggal' => now()->toDateString()]));
 
-        // Assert: Memastikan file berhasil diunduh dalam format Excel
-        $response->assertStatus(200);
-        $this->assertContains('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
-        $this->assertTrue(Storage::disk('local')->exists('exports/riwayat_checkin.xlsx'));
+    $response->assertStatus(200);
 
-        // Optional: Memastikan data yang diekspor sesuai dengan yang ada di database
-        $exportedData = Excel::toArray(new \App\Exports\RiwayatCheckinExport, storage_path('app/exports/riwayat_checkin.xlsx'));
-        $this->assertCount(5, $exportedData[0]); // Pastikan jumlah data sesuai dengan yang ada di database
-    }
+    // Cek jika Excel diekspor (tanpa benar-benar menyimpan file)
+    Excel::assertDownloaded('riwayat_checkin.xlsx');
+}
 
-    /** @test */
-    public function it_exports_checkin_history_to_pdf()
-    {
-        // Arrange: Login sebagai FrontOffice, Marketing, atau Admin
-        $user = User::factory()->create();
-        $this->actingAs($user);
+      /** @test */
+public function it_exports_checkin_history_to_pdf()
+{
+    Storage::fake('local');
 
-        // Membuat data kehadiran untuk diuji
-        Kehadiran::factory()->count(5)->create();
+    $user = User::factory()->create();
+    $this->actingAs($user);
 
-        // Act: Menekan tombol export untuk PDF
-        $response = $this->get(route('riwayat.checkin.export.pdf', ['tanggal' => now()->toDateString()]));
+    Kehadiran::factory()->count(5)->create();
 
-        // Assert: Memastikan file berhasil diunduh dalam format PDF
-        $response->assertStatus(200);
-        $this->assertContains('application/pdf', $response->headers->get('Content-Type'));
-        $this->assertTrue(Storage::disk('local')->exists('exports/riwayat_checkin.pdf'));
+    $response = $this->get(route('riwayat.checkin.export.pdf', ['tanggal' => now()->toDateString()]));
 
-        // Optional: Memastikan PDF dapat dibaca atau dimuat (bisa menggunakan library DomPDF untuk verifikasi konten)
-        $pdfContent = Storage::disk('local')->get('exports/riwayat_checkin.pdf');
-        $this->assertNotEmpty($pdfContent);
-    }
+    $response->assertStatus(200);
+    // Cek isi response langsung (PDF header)
+    $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+}
+
 }

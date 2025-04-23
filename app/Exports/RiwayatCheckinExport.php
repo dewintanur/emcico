@@ -22,25 +22,30 @@ class RiwayatCheckinExport implements FromCollection, WithHeadings
             })
             ->get()
             ->map(function ($data) {
+                $booking = $data->booking;
+                $peminjaman = $booking->peminjaman ?? collect();
+                $ruangan = $booking->ruangan ?? null;
+            
                 return [
                     'Kode Booking'      => $data->kode_booking,
-                    'Nama Organisasi'   => $data->booking->nama_organisasi ?? '-',
-                    'Nama Event'        => $data->booking->nama_event ?? '-',
+                    'Nama Organisasi'   => $booking->nama_organisasi ?? '-',
+                    'Nama Event'        => $booking->nama_event ?? '-',
                     'Nama User'         => $data->nama_ci,
                     'Tanggal Check-in'  => \Carbon\Carbon::parse($data->tanggal_ci)->format('d F Y, H:i'),
-                    'Waktu Mulai'       => \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i'),
-                    'Waktu Selesai'     => \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i'),
-                    'Ruangan'           => $data->booking->ruangan->nama_ruangan ?? '-',
-                    'Lantai'            => $data->booking->lantai ?? '-',
-                    'Peminjaman Barang' => $data->booking->peminjaman->isNotEmpty() ? 'Ada' : 'Tidak Ada',
-                    'Marketing'         => $data->booking->peminjaman->isNotEmpty() 
-                        ? implode(', ', $data->booking->peminjaman->pluck('marketing')->toArray()) 
-                        : 'Tidak Ada',
+                    'Waktu Mulai'       => $booking && $booking->waktu_mulai ? \Carbon\Carbon::parse($booking->waktu_mulai)->format('H:i') : '-',
+                    'Waktu Selesai'     => $booking && $booking->waktu_selesai ? \Carbon\Carbon::parse($booking->waktu_selesai)->format('H:i') : '-',
+                    'Ruangan'           => $ruangan->nama_ruangan ?? '-',
+                    'Lantai'            => $booking->lantai ?? '-',
+                    'Peminjaman Barang' => $peminjaman->isNotEmpty() ? 'Ada' : 'Tidak Ada',
+                    'Marketing'         => $peminjaman->isNotEmpty()
+                                            ? implode(', ', $peminjaman->pluck('marketing')->toArray())
+                                            : 'Tidak Ada',
                     'Tanda Tangan'      => $data->ttd ? 'Ada' : 'Tidak Ada',
                     'Duty Officer'      => $data->dutyOfficer->nama ?? 'Tidak Ada',
                     'Front Office'      => $data->fo->nama ?? 'Belum Checkout',
                 ];
             });
+            
     }
     
 

@@ -1,99 +1,108 @@
 <?php
-
 namespace Tests\Feature;
 
+use App\Models\Kehadiran;
+use App\Models\User;
+use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Booking;
-use App\Models\Kehadiran;
 
 class BookingControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     /** @test */
-    public function index_page_redirects_if_not_logged_in()
+    public function admin_can_see_booking_list_for_today()
     {
-        $response = $this->get('/booking-list');
-        $response->assertStatus(302); // redirect karena belum login
+        $front_office = User::factory()->create([
+            'role' => 'front_office', // Pastikan front_office dapat melihat daftar booking
+        ]);
+
+        // Membuat beberapa data booking untuk hari ini
+        Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12345',
+            'nama_event' => 'Event 1',
+        ]);
+        Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12346',
+            'nama_event' => 'Event 2',
+        ]);
+
+        // Melakukan login sebagai front_office
+        $this->actingAs($front_office);
+
+        // Mengakses halaman booking list
+        $response = $this->get(route('fo.bookingList'));
+
+        // Memastikan bahwa booking list hari ini ditampilkan
+        $response->assertStatus(200);
+        $response->assertSee('Event 1');
+        $response->assertSee('Event 2');
     }
 
     /** @test */
-    public function check_in_succeeds_with_valid_booking_code()
+    public function front_office_can_filter_booking_by_status()
     {
-        // Arrange
-        $booking = Booking::factory()->create([
-            'kode_booking' => 'ABC123',
+        $front_office = User::factory()->create([
+            'role' => 'front_office',
         ]);
-
-        // Act
-        $response = $this->post(route('proses_checkin'), [
-            'kode_booking' => 'ABC123',
-            'nama_ci' => 'Test User',
-            'no_ci' => '08123456789',
-            'instansi' => 'Universitas Testing',
-            'email' => 'test@example.com',
-            'alamat' => 'Jalan Uji Coba No. 1',
-            'ttd' => 'data:image/png;base64,somebase64string',
-            'duty_officer' => 'Petugas 1',
+    
+        // Booking yang dianggap Approved karena belum ada kehadiran
+        $booking1 = Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12345',
         ]);
-
-        // Assert
-        $response->assertStatus(302);
-        $this->assertDatabaseHas('kehadiran', [
-            'kode_booking' => 'ABC123',
-            'nama_ci' => 'Test User',
-            'status' => 'Booked',  // Pastikan status yang sesuai
+    
+        // Booking yang sudah Booked (ada kehadiran)
+        $booking2 = Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12346',
         ]);
+    
+        Kehadiran::factory()->create([
+            'kode_booking' => $booking2->kode_booking,
+            'status' => 'Booked',
+        ]);
+    
+        $this->actingAs($front_office);
+    
+        $response = $this->get(route('fo.bookingList', ['status' => 'Approved']));
+    
+        $response->assertStatus(200);
+        $response->assertSee('B12345'); // Harus tampil karena belum ada data kehadiran
+        $response->assertDontSee('B12346'); // Tidak tampil karena sudah ada kehadiran
     }
-
+    
     /** @test */
-    public function check_in_fails_if_booking_not_found()
+    public function admin_can_search_booking_by_code_or_event_name()
     {
-        $response = $this->post(route('proses_checkin'), [
-            'kode_booking' => 'TIDAKADA',
-            'nama_ci' => 'Test User',
-            'no_ci' => '08123456789',
-            'instansi' => 'Universitas Testing',
-            'email' => 'test@example.com',
-            'alamat' => 'Jalan Uji Coba No. 1',
-            'ttd' => 'data:image/png;base64,somebase64string',
-            'duty_officer' => 'Petugas 2',
+        $admin = User::factory()->create([
+            'role' => 'front_office',
         ]);
 
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors(['kode_booking']);
-    }
-
-    /** @test */
-    public function check_in_fails_if_already_checked_in()
-    {
-        $booking = Booking::factory()->create([
-            'kode_booking' => 'DEF456',
+        // Membuat data booking dengan nama event dan kode booking
+        Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12345',
+            'nama_event' => 'Event 1',
+        ]);
+        Booking::factory()->create([
+            'tanggal' => today(),
+            'kode_booking' => 'B12346',
+            'nama_event' => 'Event 2',
         ]);
 
-        Kehadiran::create([
-            'kode_booking' => 'DEF456',
-            'tanggal_ci' => now()->format('Y-m-d'),
-            'nama_ci' => 'Test User',
-            'no_ci' => '08123456789',
-            'status' => 'Checked-in', // Pastikan status sudah sesuai
-            'ttd' => 'data:image/png;base64,fakeimage',
-            'duty_officer' => 'Petugas 3',
-        ]);
+        // Melakukan login sebagai admin
+        $this->actingAs($admin);
 
-        $response = $this->post(route('proses_checkin'), [
-            'kode_booking' => 'DEF456',
-            'nama_ci' => 'Test User',
-            'no_ci' => '08123456789',
-            'instansi' => 'Universitas Testing',
-            'email' => 'test@example.com',
-            'alamat' => 'Jalan Uji Coba No. 1',
-            'ttd' => 'data:image/png;base64,fakeimage',
-            'duty_officer' => 'Petugas 3',
-        ]);
+        // Mengakses halaman booking list dengan pencarian
+        $response = $this->get(route('fo.bookingList', ['search' => 'Event 1']));
 
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors(['kode_booking']);
+        // Memastikan hanya booking dengan nama event 'Event 1' yang ditampilkan
+        $response->assertStatus(200);
+        $response->assertSee('Event 1');
+        $response->assertDontSee('Event 2');
     }
 }

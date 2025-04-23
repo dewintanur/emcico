@@ -59,10 +59,11 @@
                 <div class="col-2 text-truncate">{{ $data->booking->nama_organisasi ?? '-' }}</div>
                 <div class="col-2">{{ $data->nama_ci }}</div>
                 <div class="col-2">
-                    {{ \Carbon\Carbon::parse($data->booking->tanggal)->translatedFormat('d F Y') }} <br>
-                    {{ \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') }} - 
-                    {{ \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') }}
-                </div>
+    {{ optional($data->booking)->tanggal ? \Carbon\Carbon::parse($data->booking->tanggal)->translatedFormat('d F Y') : '-' }} <br>
+    {{ optional($data->booking)->waktu_mulai ? \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') : '-' }} -
+    {{ optional($data->booking)->waktu_selesai ? \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') : '-' }}
+</div>
+
                 <div class="col-1">
                     <a href="{{ route('riwayat.checkin.detail', $data->kode_booking) }}"
                         class="btn" style="background-color: #4C74E1; font-weight: 600; color: black;"> Lihat

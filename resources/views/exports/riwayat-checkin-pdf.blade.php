@@ -62,20 +62,21 @@
                     <td>{{ $data->booking->nama_event ?? '-' }}</td>
                     <td>{{ $data->nama_ci }}</td>
                     <td>{{ \Carbon\Carbon::parse($data->tanggal_ci)->format('d F Y, H:i') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') }}</td>
+                    <td>{{ $data->booking && $data->booking->waktu_mulai ? \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') : '-' }}</td>
+                    <td>{{ $data->booking && $data->booking->waktu_selesai ? \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') : '-' }}</td>
                     <td>{{ $data->booking->ruangan->nama_ruangan ?? '-' }}</td>
                     <td>{{ $data->booking->lantai ?? '-' }}</td>
                     <td>
-    {{ $data->booking->peminjaman ? 'Ada' : 'Tidak Ada' }}
+    {{ optional($data->booking)->peminjaman ? 'Ada' : 'Tidak Ada' }}
 </td>
 <td>
-    @if ($data->booking->peminjaman->isNotEmpty())
+    @if ($data->booking && $data->booking->peminjaman && $data->booking->peminjaman->isNotEmpty())
         {{ implode(', ', $data->booking->peminjaman->pluck('marketing')->toArray()) }}
     @else
         Tidak Ada
     @endif
 </td>
+
 
                     <td>
                         @if ($data->ttd)

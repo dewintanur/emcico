@@ -14,16 +14,18 @@ class KehadiranFactory extends Factory
 
     public function definition(): array
     {
+        $ruangan = \App\Models\Ruangan::factory()->create();
         $booking = Booking::factory()->create();
+        $user = User::factory()->create(['role' => 'duty_officer']);
 
         return [
-            'kode_booking' => Booking::factory(), // Relasi dengan Booking
+            'kode_booking' => $booking->kode_booking,
             'nama_ci' => $this->faker->name(),
             'ruangan_id' => $booking->ruangan_id, // sesuaikan dengan ruangan di booking
             'no_ci' => $this->faker->phoneNumber(),
             'tanggal_ci' => Carbon::now()->format('Y-m-d'),
             'ttd' => 'data:image/png;base64,' . base64_encode('signaturedata'), // Base64 dummy signature
-            'duty_officer' => User::factory(), // Relasi dengan User
+            'duty_officer' => $user->id,
             'status' => 'Checked-in',
             'status_konfirmasi' => 'belum_konfirmasi',
             'created_at' => Carbon::now(),
