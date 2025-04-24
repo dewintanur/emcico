@@ -59,8 +59,12 @@ class PeminjamanBarangController extends Controller
 
     // Filter berdasarkan tanggal
     if ($request->has('date') && !empty($request->date)) {
-        $query->whereDate('created_at', $request->date);
+        $query->whereDate('tanggal', $request->date); // pakai kolom tanggal dari tabel booking
+    } else {
+        // Default: tampilkan data untuk esok hari
+        $query->whereDate('tanggal', Carbon::tomorrow());
     }
+    
 
     // Pencarian berdasarkan kode booking atau nama barang
     if ($request->has('search') && !empty($request->search)) {
