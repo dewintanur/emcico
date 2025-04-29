@@ -124,7 +124,7 @@
             </form>
         </div>
 
-        <h5 class="text-center mt-4" style="font-size: 14px; color: #091F5B;">*Barcode dikirimkan ke email Anda apabila sudah di-approve</h5>
+        <h5 class="text-center mt-4" style="font-size: 14px; color: #091F5B;">*Barcode dikirimkan ke wa Anda apabila sudah di-approve</h5>
     </div>
 
     <!-- SCRIPT SCANNER -->

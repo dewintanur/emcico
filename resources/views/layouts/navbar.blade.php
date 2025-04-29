@@ -137,6 +137,7 @@
                                                 class="fas fa-calendar-alt me-2"></i> Booking List</a></li>
 
                                     <hr class="dropdown-divider my-1">
+                                    
                                 @endif
                                 @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing')
                                     <li>
