@@ -121,7 +121,8 @@
                                                 <div class="col-md-6 d-flex align-items-center mt-2">
                                                     <p class="mb-0 fw-bold flex-shrink-0" style="width: 100px;">Tanggal</p>
                                                     <p class="mb-0 text-end ms-3" style="color: #091F5B;">
-    {{ \Carbon\Carbon::parse($booking['tanggal'])->translatedFormat('d F Y') }}</p>
+                                                        {{ \Carbon\Carbon::parse($booking['tanggal'])->translatedFormat('d F Y') }}
+                                                    </p>
                                                 </div>
                                                 <div class="col-md-6 d-flex align-items-center mt-2">
                                                     <p class="mb-0 fw-bold flex-shrink-0" style="width: 100px;">Jam</p>
@@ -133,23 +134,22 @@
                                             </div>
                                         </div>
                                         <h6 class="fw-bold">List Barang yang Tersedia</h6>
-                                        <table class="table table-bordered" id="barangList{{ $booking->id }}">
+                                        <table class="table table-bordered" id="barangList{{ $booking->kode_booking }}">
                                             <thead class="table-light">
                                                 <tr>
                                                     <th>No</th>
                                                     <th>Nama Barang</th>
                                                     <th>Jumlah</th>
-                                                    <th>Status Pengembalian</th>
+
 
                                                 </tr>
                                             </thead>
-                                            <tbody id="availableItems">
+                                            <tbody id="availableItems{{ $booking->kode_booking }}">
                                                 @foreach($listBarang as $index => $barang)
                                                     <tr>
                                                         <td>{{ $index + 1 }}</td>
                                                         <td>{{ $barang->nama_barang }}</td>
-                                                        <td>{{ $barang->jumlah }}</td>
-                                                        <td class="color: {{ $barang->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">{{ $barang->status_pengembalian ?? 'Belum Dikembalikan' }}</td>
+                                                        <td class="jumlah-barang">{{ $barang->jumlah }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -180,7 +180,8 @@
                                                             </td>
                                                             <td>
                                                                 <button type="button" class="btn btn-danger btn-sm"
-                                                                    onclick="removeItem(this, {{ $peminjaman->id }})">Hapus</button>
+                                                                    onclick="removeItem(this, {{ $peminjaman->id }}, '{{ optional($peminjaman->barang)->nama_barang }}', {{ $peminjaman->jumlah }}, '{{ $booking->kode_booking }}')">Hapus</button>
+
                                                             </td>
                                                         </tr>
                                                     @endforeach
@@ -227,150 +228,184 @@
                                 </div>
                 @endforeach
                         </div>
-
                         <script>
-                            $(document).on("click", ".btn-warning", function () {
-                                let targetModal = $(this).attr("data-bs-target");
-                                console.log("Modal yang akan dibuka:", targetModal);
+    $(document).on("click", ".btn-warning", function () {
+        let targetModal = $(this).attr("data-bs-target");
+        let modalElement = $(targetModal);
+        if (modalElement.length === 0) {
+            console.error("Modal tidak ditemukan di DOM!");
+            return;
+        }
 
-                                let modalElement = $(targetModal);
-                                console.log("Elemen modal ditemukan?", modalElement.length > 0);
-                                console.log("Modal element:", modalElement);
+        modalElement.removeAttr("aria-hidden").removeAttr("tabindex");
+        $(".modal").modal("hide");
 
-                                // Cek apakah modal sudah di-render di DOM
-                                if (modalElement.length === 0) {
-                                    console.error("Modal tidak ditemukan di DOM!");
-                                    return;
-                                }
+        setTimeout(() => {
+            modalElement.removeClass("fade");
+            modalElement.css("display", "block");
+            modalElement.modal("show");
+        }, 200);
+    });
 
-                                // Paksa hapus atribut yang bisa menghambat
-                                modalElement.removeAttr("aria-hidden");
-                                modalElement.removeAttr("tabindex");
+    $(document).ready(function () {
+        $(".modal").each(function () {
+            $(this).appendTo("body");
+        });
+    });
 
-                                // Tutup modal lain sebelum buka yang baru
-                                $(".modal").modal("hide");
+    function addItem(kodeBooking) {
+        document.getElementById('addItemForm-' + kodeBooking).style.display = 'block';
+    }
 
-                                // Paksa Bootstrap refresh
-                                setTimeout(() => {
-                                    modalElement.removeClass("fade");
-                                    modalElement.css("display", "block");
-                                    modalElement.modal("show");
-                                    console.log("Modal berhasil dibuka:", targetModal);
-                                }, 200);
-                            });
-                            $(document).ready(function () {
-                                $(".modal").each(function () {
-                                    $(this).appendTo("body"); // Pindahin modal ke body biar Bootstrap bisa nge-load
-                                });
-                            });
+    function saveItem(kodeBooking) {
+        let barangSelect = document.querySelector(`.barangSelect[data-kode-booking="${kodeBooking}"]`);
+        let jumlahInput = document.querySelector(`.jumlahBarang[data-kode-booking="${kodeBooking}"]`);
+        let formContainer = document.getElementById('addItemForm-' + kodeBooking);
 
-                            function addItem(kodeBooking) {
-                                document.getElementById('addItemForm-' + kodeBooking).style.display = 'block';
+        if (!barangSelect || !jumlahInput || !formContainer) {
+            console.error('Elemen input tidak ditemukan!');
+            alert('Terjadi kesalahan: Elemen input tidak ditemukan.');
+            return;
+        }
+
+        let barangId = barangSelect.value;
+        let jumlah = jumlahInput.value;
+        let namaBarang = barangSelect.options[barangSelect.selectedIndex].text.trim();
+
+        if (barangId === "") {
+            alert('Pilih barang terlebih dahulu!');
+            return;
+        }
+        if (jumlah < 1) {
+            alert('Jumlah barang harus lebih dari 0!');
+            return;
+        }
+
+        fetch('/peminjaman/store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                kode_booking: kodeBooking,
+                barang_id: barangId,
+                jumlah: jumlah
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Barang berhasil ditambahkan!');
+
+                    let borrowedTable = document.getElementById('borrowedItems' + kodeBooking);
+                    let rows = borrowedTable.getElementsByTagName('tr');
+                    let found = false;
+
+                    for (let i = 0; i < rows.length; i++) {
+                        let cellNama = rows[i].cells[1];
+                        if (cellNama && cellNama.innerText.trim() === namaBarang) {
+                            let cellJumlah = rows[i].cells[2];
+                            cellJumlah.innerText = parseInt(cellJumlah.innerText) + parseInt(jumlah);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        let newRow = borrowedTable.insertRow();
+                        newRow.innerHTML = `
+                            <td>${borrowedTable.rows.length}</td>
+                            <td>${namaBarang}</td>
+                            <td class="text-center">${jumlah}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                    onclick="removeItem(this, ${data.peminjaman_id}, '${namaBarang}', ${jumlah}, '${kodeBooking}')">Hapus</button>
+                            </td>`;
+                    }
+
+                    // ✅ Tambahkan pengecekan sebelum akses querySelectorAll
+                    let availableItemsTable = document.querySelector(`#availableItems${kodeBooking}`);
+                    if (!availableItemsTable) {
+                        console.error(`[ERROR] Tabel dengan ID #availableItems${kodeBooking} tidak ditemukan.`);
+                        return;
+                    }
+
+                    let availableRows = availableItemsTable.querySelectorAll("tr");
+
+                    availableRows.forEach(row => {
+                        let cellNama = row.cells[1];
+                        let cellJumlah = row.querySelector('.jumlah-barang');
+                        if (cellNama && cellNama.innerText.trim() === namaBarang && cellJumlah) {
+                            let jumlahLama = parseInt(cellJumlah.innerText);
+                            let jumlahBaru = jumlahLama - parseInt(jumlah);
+                            cellJumlah.innerText = jumlahBaru;
+                            console.log(`[UPDATE] '${namaBarang}' dikurangi: ${jumlahLama} → ${jumlahBaru}`);
+                        } else {
+                            console.log(`[SKIP] Tidak cocok: '${cellNama?.innerText.trim()}' ≠ '${namaBarang}'`);
+                        }
+                    });
+
+                    barangSelect.value = "";
+                    jumlahInput.value = "";
+                    formContainer.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan barang.');
+            });
+    }
+
+    function removeItem(button, peminjamanId, namaBarang, jumlah, kodeBooking) {
+        if (confirm("Apakah Anda yakin ingin menghapus barang ini?")) {
+            fetch(`/peminjaman/destroy/${peminjamanId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        button.closest('tr').remove();
+                        alert("Barang berhasil dihapus!");
+
+                        // ✅ Tambahkan kembali jumlah barang ke list tersedia
+                        let availableItemsTable = document.querySelector(`#availableItems${kodeBooking}`);
+                        if (!availableItemsTable) {
+                            console.error(`[ERROR] Tabel barang tersedia dengan ID #availableItems${kodeBooking} tidak ditemukan`);
+                            return;
+                        }
+
+                        let found = false;
+                        let availableRows = availableItemsTable.querySelectorAll("tr");
+                        availableRows.forEach(row => {
+                            let cellNama = row.cells[1];
+                            let cellJumlah = row.querySelector('.jumlah-barang');
+                            if (cellNama && cellJumlah && cellNama.innerText.trim() === namaBarang.trim()) {
+                                let jumlahLama = parseInt(cellJumlah.innerText);
+                                let jumlahBaru = jumlahLama + parseInt(jumlah);
+                                cellJumlah.innerText = jumlahBaru;
+                                console.log(`[RETURN] '${namaBarang}' dikembalikan: ${jumlahLama} → ${jumlahBaru}`);
+                                found = true;
                             }
+                        });
 
-                            function saveItem(kodeBooking) {
-                                let barangSelect = document.querySelector(`.barangSelect[data-kode-booking="${kodeBooking}"]`);
-                                let jumlahInput = document.querySelector(`.jumlahBarang[data-kode-booking="${kodeBooking}"]`);
-                                let formContainer = document.getElementById('addItemForm-' + kodeBooking);
+                        if (!found) {
+                            console.warn(`[SKIP] Barang '${namaBarang}' tidak ditemukan di daftar tersedia`);
+                        }
 
-                                if (!barangSelect || !jumlahInput || !formContainer) {
-                                    console.error('Elemen tidak ditemukan!');
-                                    alert('Terjadi kesalahan: Elemen input tidak ditemukan.');
-                                    return;
-                                }
+                    } else {
+                        alert("Gagal menghapus barang!");
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
 
-                                let barangId = barangSelect.value;
-                                let jumlah = jumlahInput.value;
-                                let namaBarang = barangSelect.options[barangSelect.selectedIndex].text;
+</script>
 
-                                if (barangId === "") {
-                                    alert('Pilih barang terlebih dahulu!');
-                                    return;
-                                }
-                                if (jumlah < 1) {
-                                    alert('Jumlah barang harus lebih dari 0!');
-                                    return;
-                                }
-                                fetch('/peminjaman/store', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                    },
-                                    body: JSON.stringify({
-                                        kode_booking: kodeBooking,
-                                        barang_id: barangId,
-                                        jumlah: jumlah
-                                    })
-                                })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        if (data.error) {
-                                            alert(data.error);
-                                        } else {
-                                            alert('Barang berhasil ditambahkan!');
-
-                                            let borrowedTable = document.getElementById('borrowedItems' + kodeBooking);
-                                            let rows = borrowedTable.getElementsByTagName('tr');
-                                            let found = false;
-
-                                            for (let i = 0; i < rows.length; i++) {
-                                                let cellNama = rows[i].cells[1]; // Kolom nama barang
-
-                                                if (cellNama && cellNama.innerText === namaBarang) {
-                                                    let cellJumlah = rows[i].cells[2]; // Kolom jumlah
-                                                    cellJumlah.innerText = parseInt(cellJumlah.innerText) + parseInt(jumlah);
-                                                    found = true;
-                                                    break;
-                                                }
-                                            }
-
-                                            if (!found) {
-                                                let newRow = borrowedTable.insertRow();
-                                                newRow.innerHTML = `
-                    <td>${borrowedTable.rows.length}</td>
-                    <td>${namaBarang}</td>
-                    <td class="text-center">${jumlah}</td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-sm" 
-                            onclick="removeItem(this, ${data.peminjaman_id})">Hapus</button>
-                    </td>`;
-                                            }
-
-                                            // Reset form dan sembunyikan
-                                            barangSelect.value = "";
-                                            jumlahInput.value = "";
-                                            formContainer.style.display = 'none';
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error:', error);
-                                        alert('Terjadi kesalahan saat menyimpan barang.');
-                                    });
-
-
-                            }
-
-
-                            function removeItem(button, peminjamanId) {
-                                if (confirm("Apakah Anda yakin ingin menghapus barang ini?")) {
-                                    fetch(`/peminjaman/destroy/${peminjamanId}`, {
-                                        method: "DELETE",
-                                        headers: {
-                                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                        }
-                                    })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                button.closest('tr').remove();
-                                                alert("Barang berhasil dihapus!");
-                                            } else {
-                                                alert("Gagal menghapus barang!");
-                                            }
-                                        })
-                                        .catch(error => console.error('Error:', error));
-                                }
-                            }
-                        </script>
 @endsection
