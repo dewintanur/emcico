@@ -4,7 +4,7 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
-            <h2 class="mb-4 text-center">User List</h2>
+            <h2 class="mb-4 text-center">Daftar Pengguna</h2>
             <div class="d-flex justify-content-end mb-3">
                 <a href="{{ route('users.create') }}" class="btn btn-success">Tambah</a>
             </div>

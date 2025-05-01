@@ -22,12 +22,15 @@
                         <div class="mb-3">
                             <label for="role" class="form-label">Role</label>
                             <select class="form-select" id="role" name="role" required>
-                                <option value="it" {{ $user->role == 'it' ? 'selected' : '' }}>IT</option>
+                                 <option value="" >Silahkan Pilih Role</option>
+
+                                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
                                 <option value="marketing" {{ $user->role == 'marketing' ? 'selected' : '' }}>Marketing
                                 </option>
                                 <option value="produksi" {{ $user->role == 'produksi' ? 'selected' : '' }}>Produksi</option>
                                 <option value="front_office" {{ $user->role == 'front_office' ? 'selected' : '' }}>Front
                                     Office</option>
+                                    <option value="duty_officer" {{ $user->role == 'duty_officer' ? 'selected' : '' }}>Duty Officer</option>
                             </select>
 
                         </div>

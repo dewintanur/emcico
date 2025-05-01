@@ -25,6 +25,7 @@
                                 <option value="produksi">Produksi</option>
                                 <option value="it">IT</option>
                                 <option value="duty_officer">Duty Office</option>
+                                <option value="admin">Admin</option>
                             </select>
                         </div>
                         <div class="mb-3">

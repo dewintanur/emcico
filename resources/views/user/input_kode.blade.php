@@ -113,29 +113,8 @@
         </div>
     </form>
     <p class="text-center">*kode booking bisa dicek di halaman riwayat booking</p>
-    @guest
-<a href="{{ route('login') }}"
-    style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        background-color: #0d6efd;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-        font-size: 20px;
-        z-index: 999;
-    ">
-    <i class="fas fa-sign-in-alt"></i>
-</a>
-@endguest
+
 <a href="{{ route('login') }}" class="btn btn-primary position-fixed bottom-0 end-0 mb-3 me-3 rounded-circle" style="width: 60px; height: 60px; font-size: 30px; display: flex; justify-content: center; align-items: center;">
-<i class="fas fa-door-open"></i> {{-- Ikon pintu terbuka --}}
+<i class="fas fa-sign-in-alt"></i>
 </a>
 @endsection

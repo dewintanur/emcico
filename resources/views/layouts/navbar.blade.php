@@ -130,7 +130,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser"
                                 style="font-family: 'Montserrat', sans-serif; font-size: 14px; min-width: 200px;">
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'front_office')
+                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'front_office' || auth()->user()->role === 'admin')
                                     <li><a class="dropdown-item py-2" href="/ruangan"><i class="fas fa-door-open me-2"></i> Room
                                             List</a></li>
                                     <li><a class="dropdown-item py-2" href="/booking-list"><i
@@ -139,7 +139,7 @@
                                     <hr class="dropdown-divider my-1">
                                     
                                 @endif
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing')
+                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing'|| auth()->user()->role === 'admin')
                                     <li>
                                         <a class="dropdown-item py-2" href="{{ route('marketing.peminjaman') }}">
                                             <i class="fas fa-boxes me-2"></i> Peminjaman Barang
@@ -155,7 +155,7 @@
                                     <hr class="dropdown-divider my-1">
                                 @endif
 
-                                @if (auth()->user()->role === 'it')
+                                @if (auth()->user()->role === 'it'|| auth()->user()->role === 'admin')
                                     <li>
                                         <a class="dropdown-item py-2" href="/it">
                                             <i class="fas fa-user-cog me-2"></i> Daftar Pengguna
@@ -183,7 +183,7 @@
                                     </li>
                                     <hr class="dropdown-divider my-1">
                                 @endif
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing' || auth()->user()->role === 'front_office')
+                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'admin'|| auth()->user()->role === 'marketing' || auth()->user()->role === 'front_office')
                                     <li>
                                         <a class="dropdown-item py-2" href="{{ route('riwayat.checkin') }}">
                                             <i class="fas fa-history me-2"></i> Riwayat Check-in

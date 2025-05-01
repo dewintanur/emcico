@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Peminjaman Barang List')
 @section('content')
+@php
+    $isAdminOrIT = Auth::user()->role == 'admin' || Auth::user()->role == 'it';
+@endphp
 
     <body class="">
         <!-- Header -->
@@ -18,12 +21,12 @@
                     class="d-flex flex-wrap align-items-center gap-2">
                     <!-- Date Filter -->
                     <div>
-                        <input type="date" name="date" class="form-control" value="{{ request('date') }}"
+                        <input type="date" name="date" class="form-control filter-allowed" value="{{ request('date') }}"
                             onchange="this.form.submit()">
                     </div>
                     <!-- Search Filter -->
                     <div>
-                        <input type="text" name="search" class="form-control" placeholder="Search by Event Name"
+                        <input type="text" name="search" class="form-control filter-allowed" placeholder="Search by Event Name"
                             value="{{ request('search') }}" oninput="this.form.submit()">
                     </div>
                 </form>
@@ -78,7 +81,7 @@
                             </div>
                             <div class="col-md-1 text-left">
                                 <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editModal{{ $booking['kode_booking'] }}">Edit</button>
+                                    data-bs-target="#editModal{{ $booking['kode_booking'] }}"   {{ $isAdminOrIT ? 'disabled' : '' }}>Edit</button>
                             </div>
                         </div>
                     </div>

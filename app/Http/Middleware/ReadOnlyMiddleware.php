@@ -10,7 +10,7 @@ class ReadOnlyMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::user()->role == 'it' && !$request->isMethod('get')) {
+        if (in_array(Auth::user()->role, ['it', 'admin']) && !$request->isMethod('get')) {
             return response()->json(['message' => 'Akses terbatas: hanya bisa melihat'], 403);
         }
 

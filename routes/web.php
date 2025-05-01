@@ -66,7 +66,7 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
     });
 
     // **🔵 Marketing**
-    Route::middleware('role:marketing')->group(function () {
+    Route::middleware('role:marketing,admin,it')->group(function () {
         Route::get('/marketing/peminjaman-list', [PeminjamanBarangController::class, 'listPeminjaman'])->name('marketing.peminjaman');
         Route::post('/peminjaman/store', [PeminjamanBarangController::class, 'store'])->name('peminjaman.store');
         Route::delete('/peminjaman/destroy/{id}', [PeminjamanBarangController::class, 'destroy'])->name('peminjaman.destroy');
@@ -104,19 +104,19 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
 
     // **👁️‍🗨️ IT Hanya Bisa Melihat (Read-Only)**
     Route::middleware('readonly')->group(function () {
-        Route::middleware('role:front_office,it')->group(function () {
+        Route::middleware('role:front_office,it,admin')->group(function () {
             Route::get('/booking-list', [BookingController::class, 'index'])->name('fo.bookingList');
         });
 
-        Route::middleware('role:front_office,duty_officer,it')->group(function () {
+        Route::middleware('role:front_office,duty_officer,it,admin')->group(function () {
             Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
         });
 
-        Route::middleware('role:marketing,it')->group(function () {
+        Route::middleware('role:marketing,it,admin')->group(function () {
             Route::get('/marketing/peminjaman-list', [PeminjamanBarangController::class, 'listPeminjaman'])->name('marketing.peminjaman');
         });
 
-        Route::middleware('role:produksi,it')->group(function () {
+        Route::middleware('role:produksi,it,admin')->group(function () {
             Route::get('/produksi/peminjaman', [PeminjamanBarangController::class, 'produksi'])->name('produksi.peminjaman');
         });
     });

@@ -30,7 +30,7 @@ class UserController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => 'required|in:it,marketing,produksi,front_office,duty_officer', // Sesuai ENUM di database
+            'role' => 'required|in:it,marketing,produksi,front_office,duty_officer,admin', // Sesuai ENUM di database
             'password' => 'required|string|min:6'
         ]);
 
@@ -65,7 +65,7 @@ class UserController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$id, // Cegah duplikasi email kecuali email yang sedang diedit
-            'role' => 'required|in:it,marketing,produksi,front_office,duty_officer', // Sesuai ENUM di database
+            'role' => 'required|in:it,marketing,produksi,front_office,duty_office,admin', // Sesuai ENUM di database
         ]);
     
         \Log::info('Request valid');

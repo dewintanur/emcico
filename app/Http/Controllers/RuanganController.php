@@ -121,7 +121,7 @@ class RuanganController extends Controller
         })->values();
     
         // Ambil daftar lantai yang tersedia
-        $lantaiOptions = Ruangan::distinct()->pluck('lantai');
+        $lantaiOptions = Ruangan::select('lantai')->distinct()->orderBy('lantai')->pluck('lantai');
     
         return view('FO.roomList', compact('ruangan', 'lantaiOptions'));
     }
