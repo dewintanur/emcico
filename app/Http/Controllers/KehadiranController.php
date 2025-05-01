@@ -136,32 +136,35 @@ class KehadiranController extends Controller
         public function scanBarcode(Request $request)
         {
             $kodeBooking = $request->kode_booking;
-        
+            Log::info('Scan barcode diterima', ['kode_booking' => $kodeBooking]);
+
             // Ambil booking untuk hari ini
             $booking = Booking::where('kode_booking', $kodeBooking)
                 ->whereDate('tanggal', today())
                 ->first();
         
             if (!$booking) {
-                return response()->json(['status' => 'error', 'message' => 'Kode booking tidak ditemukan atau tidak berlaku untuk hari ini.'], 404);
+                return redirect()->route('barcode.scan')->with('error_message', 'Tidak ada jadwal booking aktif untuk hari ini dengan kode tersebut. Pastikan Anda memindai kode yang benar dan sesuai tanggal booking.');
             }
+                            
         
             $waktuSekarang = now()->format('H:i');
             if ($waktuSekarang < $booking->waktu_mulai) {
-                return response()->json(['status' => 'error', 'message' => "Check-in hanya bisa dilakukan setelah pukul {$booking->waktu_mulai}."], 403);
+                return redirect()->route('barcode.scan')->with('error_message', "Check-in hanya bisa dilakukan setelah pukul {$booking->waktu_mulai}.");
             }
-        
+            
             if ($waktuSekarang > $booking->waktu_selesai) {
-                return response()->json(['status' => 'error', 'message' => "Check-in sudah ditutup. Batas check-in adalah pukul {$booking->waktu_selesai}."], 403);
+                return redirect()->route('barcode.scan')->with('error_message', "Check-in sudah ditutup. Batas check-in adalah pukul {$booking->waktu_selesai}.");
             }
-        
+            
             $sudahCheckin = Kehadiran::where('kode_booking', $kodeBooking)
                 ->whereDate('tanggal_ci', today())
                 ->exists();
-        
+            
             if ($sudahCheckin) {
-                return response()->json(['status' => 'error', 'message' => 'Kode booking ini sudah melakukan check-in.'], 400);
+                return redirect()->route('barcode.scan')->with('error_message', 'Kode booking ini sudah melakukan check-in.');
             }
+            
         
             // Simpan ke session dan arahkan ke isi_data (lewat frontend redirect)
             session([

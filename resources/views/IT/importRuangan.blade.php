@@ -27,9 +27,9 @@
             <form action="{{ route('ruangan.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3 text-center">
-                    <label for="file" class="form-label fw-bold">📎 Pilih File CSV</label>
-                    <input type="file" class="form-control" name="file" required accept=".csv">
-                </div>
+                    <label for="file" class="form-label fw-bold">📎 Pilih File CSV / SQL</label>
+                    <input type="file" class="form-control" name="file" required accept=".csv,.txt,.sql">
+                    </div>
                 <div class="text-center">
                     <button type="submit" class="btn px-4 text-white" style="background-color:#091F5B; border-radius: 8px;">🚀 Import Sekarang</button>
                 </div>

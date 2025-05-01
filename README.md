@@ -72,11 +72,15 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 2. Composer install
 3. php artisan key:generate
 4. setting env 
-APP_TIMEZONE=Asia/Jakarta
-
+<!-- APP_TIMEZONE=Asia/Jakarta
+<!-- 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=emcico
 DB_USERNAME=root
-DB_PASSWORD=
+DB_PASSWORD= --> -->
+<!-- ketika testing jalankan ini  -->
+php artisan migrate:fresh --env=testing
+<!-- kalau profile ga muncul  -->
+php artisan storage:link

@@ -135,5 +135,7 @@
     <i class="fas fa-sign-in-alt"></i>
 </a>
 @endguest
-
+<a href="{{ route('login') }}" class="btn btn-primary position-fixed bottom-0 end-0 mb-3 me-3 rounded-circle" style="width: 60px; height: 60px; font-size: 30px; display: flex; justify-content: center; align-items: center;">
+<i class="fas fa-door-open"></i> {{-- Ikon pintu terbuka --}}
+</a>
 @endsection

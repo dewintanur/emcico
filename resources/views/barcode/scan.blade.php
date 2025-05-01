@@ -70,6 +70,7 @@
         }
     </style>
 
+
     <!-- TOGGLE BARCODE / INPUT -->
     <div class="toggle-button">
     <div id="barcodeButton"
@@ -94,38 +95,41 @@
                 window.location.href = "{{ route('inputkode.show') }}";
             }
         }
+        
     </script>
 
-    <div class="container col-lg-5 py-5">
-        <div class="text-center mt-4">
-            <h4 style="font-size: 32px; color: #091F5B;">Silahkan tunjukkan barcode Anda ke Kamera</h4>
-        </div>
 
-        <div class="card bg-white shadow rounded-3 p-3 border-0 mt-4">
-            @if (session('gagal'))
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    {{ session('gagal') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            <video id="preview"></video>
-
-            <form action="{{ route('scan.barcode') }}" method="POST" id="form">
-                @csrf
-                <input type="hidden" name="kode_booking" id="kode_booking">
-            </form>
-        </div>
-
-        <h5 class="text-center mt-4" style="font-size: 14px; color: #091F5B;">*Barcode dikirimkan ke wa Anda apabila sudah di-approve</h5>
+<div class="container col-lg-5 py-5">
+    <div class="text-center mt-4">
+        <h4 style="font-size: 32px; color: #091F5B;">Silahkan tunjukkan barcode Anda ke Kamera</h4>
     </div>
+
+    <div class="card bg-white shadow rounded-3 p-3 border-0 mt-4">
+        @if (session('error_message'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ session('error_message') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        <video id="preview"></video>
+
+        <form action="{{ route('scan.barcode') }}" method="POST" id="form">
+            @csrf
+            <input type="hidden" name="kode_booking" id="kode_booking">
+        </form>
+    </div>
+
+    <h5 class="text-center mt-4" style="font-size: 14px; color: #091F5B;">*Barcode dikirimkan ke wa Anda apabila sudah di-approve</h5>
+</div>
+
 
     <!-- SCRIPT SCANNER -->
     <script>

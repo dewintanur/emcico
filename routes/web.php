@@ -69,7 +69,7 @@ Route::middleware(['auth', 'maintainRole'])->group(function () {
     Route::middleware('role:marketing')->group(function () {
         Route::get('/marketing/peminjaman-list', [PeminjamanBarangController::class, 'listPeminjaman'])->name('marketing.peminjaman');
         Route::post('/peminjaman/store', [PeminjamanBarangController::class, 'store'])->name('peminjaman.store');
-        Route::delete('/peminjaman/{id}', [PeminjamanBarangController::class, 'destroy'])->name('peminjaman.destroy');
+        Route::delete('/peminjaman/destroy/{id}', [PeminjamanBarangController::class, 'destroy'])->name('peminjaman.destroy');
         Route::get('/marketing/riwayat', [PeminjamanBarangController::class, 'historyPeminjaman'])->name('marketing.riwayat');
     });
 

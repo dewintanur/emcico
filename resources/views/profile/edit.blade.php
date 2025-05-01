@@ -19,11 +19,15 @@
                 <div class="col-md-4 text-center">
                     <label class="form-label fw-bold">Foto Profil</label><br>
                     <div class="position-relative d-inline-block">
-                        <img id="previewImage" 
-                             src="{{ Auth::user()->gambar ? asset('storage/profile_images/' . Auth::user()->gambar) : asset('images/default.png') }}" 
-                             class="rounded-circle mb-3 shadow-sm border" 
-                             width="120" height="120" alt="Foto Profil">
-
+                    @if (Auth::user()->gambar)
+        <img id="previewImage" 
+             src="{{ asset('storage/profile_images/' . Auth::user()->gambar) }}" 
+             class="rounded-circle mb-3 shadow-sm border" 
+             width="120" height="120" alt="Foto Profil">
+    @else
+        <i id="previewIcon" class="fas fa-user-circle text-secondary" 
+           style="font-size: 120px;"></i>
+    @endif
                         <!-- Tombol Upload (Icon Kamera) -->
                         <label for="uploadImage" 
                                class="position-absolute bottom-0 end-0 bg-white p-1 rounded-circle shadow-sm" 

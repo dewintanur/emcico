@@ -78,8 +78,10 @@ class RuanganController extends Controller
     
         // Loop untuk menentukan status ruangan
         foreach ($ruangan as $room) {
+            Log::info("Status untuk ruangan {$room->id}: " . $room->status);  // Tambahkan log untuk debug
+
             $room->all_bookings = $room->bookings; // Simpan semua booking hari ini
-            // \Log::info("Kehadiran untuk ruangan {$room->id}: ", $room->kehadiran->toArray());
+            Log::info("Kehadiran untuk ruangan {$room->id}: ", $room->kehadiran->toArray());
 
             // Cek apakah ruangan sedang digunakan
             $sedangDigunakan = $room->kehadiran->contains('status', 'Checked-in');
@@ -91,7 +93,8 @@ class RuanganController extends Controller
             } else {
                 $room->status = 'Kosong';
             }
-            
+  
+
     
             // Ambil booking terakhir yang sudah check-out
             $checkoutTerakhir = Booking::where('ruangan_id', $room->id)
@@ -214,15 +217,25 @@ foreach ($peminjamanList as $peminjaman) {
     }
     
     public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:csv,txt'
-        ]);
-    
-        try {
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt,sql'
+    ]);
+
+    try {
+        $extension = $request->file('file')->getClientOriginalExtension();
+
+        if ($extension === 'sql') {
+            // Jika file SQL, jalankan langsung isi perintah SQL-nya
+            $sql = file_get_contents($request->file('file')->getRealPath());
+            \DB::unprepared($sql);
+
+            return back()->with('success', 'File SQL berhasil diimpor ke database!');
+        } else {
+            // CSV atau TXT
             $file = fopen($request->file('file'), 'r');
-            $header = fgetcsv($file); // lewati baris header
-    
+            $header = fgetcsv($file); // Lewati baris header
+
             while (($row = fgetcsv($file)) !== false) {
                 Ruangan::create([
                     'nama_ruangan'   => $row[0],
@@ -233,12 +246,14 @@ foreach ($peminjamanList as $peminjaman) {
                     'status'         => $row[5],
                 ]);
             }
-    
+
             fclose($file);
-            return back()->with('success', 'Data ruangan berhasil diimpor!');
-        } catch (\Exception $e) {
-            Log::error('Import Ruangan Gagal: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat mengimpor data.');
+            return back()->with('success', 'Data ruangan berhasil diimpor dari file CSV/TXT!');
         }
+    } catch (\Exception $e) {
+        Log::error('Import Gagal: ' . $e->getMessage());
+        return back()->with('error', 'Terjadi kesalahan saat mengimpor data.');
     }
+}
+
 }
