@@ -57,7 +57,7 @@
                 @auth
                     @if(auth()->user()->role === 'duty_officer')
                         <!-- Notifikasi untuk Duty Officer -->
-                        <li class="nav-item dropdown me-3">
+                        <li class="nav-item dropdown me-3 unstyled">
                             <a class="nav-link dropdown-toggle position-relative" href="#" id="notifikasiDropdown" role="button"
                                 data-bs-toggle="dropdown">
                                 <i class="fas fa-bell"></i>
@@ -104,110 +104,122 @@
                         </li>
                     @endif
                     @if (!in_array(Route::currentRouteName(), ['barcode.scan', 'inputkode.show']))
-    
-                    <div class="d-flex align-items-center rounded-pill border px-3 py-1"
-                        style="border: 2px solid #091F5B; font-family: 'Montserrat', sans-serif; color: #091F5B; background-color: transparent;">
-                        <!-- Profile Icon -->
-                        <!-- Profile Icon (Ganti dengan Foto Profil) -->
-                        @if(Auth::user()->gambar)
-                            <img src="{{ asset('storage/profile_images/' . Auth::user()->gambar) }}" alt="Foto Profil"
-                                class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
-                        @else
-                            <i class="fas fa-user-circle me-2" style="font-size: 26px; color: #091F5B;"></i>
-                        @endif
 
-                        <!-- Role and Name -->
-                        <div class="text-start">
-                            <div class="fw-bold" style="color: #091F5B; font-size: 12px;">{{ auth()->user()->role }}</div>
-                            <div style="font-size: 14px; color: #091F5B;">{{ auth()->user()->nama }}</div>
+                        <div class="d-flex align-items-center rounded-pill border px-3 py-1"
+                            style="border: 2px solid #091F5B; font-family: 'Montserrat', sans-serif; color: #091F5B; background-color: transparent;">
+                            <!-- Profile Icon (Ganti dengan Foto Profil) -->
+                            @if(Auth::user()->gambar)
+                                <img src="{{ asset('storage/profile_images/' . Auth::user()->gambar) }}" alt="Foto Profil"
+                                    class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+                            @else
+                                <i class="fas fa-user-circle me-2" style="font-size: 26px; color: #091F5B;"></i>
+                            @endif
+
+                            <!-- Role and Name -->
+                            <div class="text-start">
+                                <div class="fw-bold" style="color: #091F5B; font-size: 12px;">{{ auth()->user()->role }}</div>
+                                <div style="font-size: 14px; color: #091F5B;">{{ auth()->user()->nama }}</div>
+                            </div>
+
+                            <!-- Dropdown Menu -->
+                            <div class="dropdown">
+                                <a href="#" class="d-flex align-items-center text-decoration-none" id="dropdownUser"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-chevron-down ms-2" style="color: #091F5B;"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser"
+                                    style="font-family: 'Montserrat', sans-serif; font-size: 14px; min-width: 200px;">
+                                   <!-- role front office -->
+                                    @if (auth()->user()->role === 'it' || auth()->user()->role === 'front_office' || auth()->user()->role === 'admin')
+                                        <li class="dropdown-header text-muted">Front Office</li>
+
+                                        <li><a class="dropdown-item py-2" href="/ruangan"><i class="fas fa-door-open me-2"></i> Room
+                                                List</a></li>
+                                        <li><a class="dropdown-item py-2" href="/booking-list"><i
+                                                    class="fas fa-calendar-alt me-2"></i> Booking List</a></li>
+
+                                        <hr class="dropdown-divider my-1">
+                                    @endif
+                                    <!-- role duty officer  -->
+                                    @if (auth()->user()->role === 'duty_officer')
+                                        <li class="dropdown-header text-muted">Duty Officer</li>
+
+                                        <li><a class="dropdown-item py-2" href="/ruangan"><i class="fas fa-door-open me-2"></i> Room
+                                                List</a></li>
+                                        <hr class="dropdown-divider my-1">
+                                    @endif
+                                    <!-- role marketing  -->
+                                    @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing' || auth()->user()->role === 'admin')
+                                        <li class="dropdown-header text-muted">Marketing</li>
+
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('marketing.peminjaman') }}">
+                                                <i class="fas fa-boxes me-2"></i> Peminjaman Barang
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('marketing.riwayat') }}">
+                                                <i class="fas fa-history me-2"></i> History
+                                            </a>
+                                        </li>
+
+
+                                        <hr class="dropdown-divider my-1">
+                                    @endif
+                                    @if (auth()->user()->role === 'it' || auth()->user()->role === 'admin' || auth()->user()->role === 'marketing' || auth()->user()->role === 'front_office')
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('riwayat.checkin') }}">
+                                                <i class="fas fa-history me-2"></i> Riwayat Check-in
+                                            </a>
+                                        </li>
+                                        <hr class="dropdown-divider my-1">
+                                    @endif
+                                    @if (auth()->user()->role === 'it' || auth()->user()->role === 'admin')
+                                        <li>
+                                            <a class="dropdown-item py-2" href="/it">
+                                                <i class="fas fa-user-cog me-2"></i> Daftar Pengguna
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="/generate-barcode">
+                                                <i class="fas fa-qrcode me-2"></i> Generate Barcode
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="/booking/import">
+                                                <i class="fas fa-file-import me-2"></i> Import Booking
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="/import-ruangan">
+                                                <i class="fas fa-file-import me-2"></i> Import Ruangan
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('list_barang.index') }}">
+                                                <i class="fas fa-boxes me-2"></i> List Barang
+                                            </a>
+                                        </li>
+                                        <hr class="dropdown-divider my-1">
+                                    @endif
+
+
+                                    <li>
+                                        <a class="dropdown-item py-2" href="{{ route('profile') }}">
+                                            <i class="fas fa-user me-2"></i> Profil Saya
+                                        </a>
+                                    </li>
+
+                                    <form action="/logout" method="POST">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item py-2">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                        </button>
+                                    </form>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-
-                        <!-- Dropdown Menu -->
-                        <div class="dropdown">
-                            <a href="#" class="d-flex align-items-center text-decoration-none" id="dropdownUser"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-chevron-down ms-2" style="color: #091F5B;"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser"
-                                style="font-family: 'Montserrat', sans-serif; font-size: 14px; min-width: 200px;">
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'front_office' || auth()->user()->role === 'admin')
-                                    <li><a class="dropdown-item py-2" href="/ruangan"><i class="fas fa-door-open me-2"></i> Room
-                                            List</a></li>
-                                    <li><a class="dropdown-item py-2" href="/booking-list"><i
-                                                class="fas fa-calendar-alt me-2"></i> Booking List</a></li>
-
-                                    <hr class="dropdown-divider my-1">
-                                    
-                                @endif
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'marketing'|| auth()->user()->role === 'admin')
-                                    <li>
-                                        <a class="dropdown-item py-2" href="{{ route('marketing.peminjaman') }}">
-                                            <i class="fas fa-boxes me-2"></i> Peminjaman Barang
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="{{ route('marketing.riwayat') }}">
-                                            <i class="fas fa-history me-2"></i> History
-                                        </a>
-                                    </li>
-
-
-                                    <hr class="dropdown-divider my-1">
-                                @endif
-
-                                @if (auth()->user()->role === 'it'|| auth()->user()->role === 'admin')
-                                    <li>
-                                        <a class="dropdown-item py-2" href="/it">
-                                            <i class="fas fa-user-cog me-2"></i> Daftar Pengguna
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="/generate-barcode">
-                                            <i class="fas fa-qrcode me-2"></i> Generate Barcode
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="/booking/import">
-                                            <i class="fas fa-file-import me-2"></i> Import Booking
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="/import-ruangan">
-                                            <i class="fas fa-file-import me-2"></i> Import Ruangan
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="{{ route('list_barang.index') }}">
-                                            <i class="fas fa-boxes me-2"></i> List Barang
-                                        </a>
-                                    </li>
-                                    <hr class="dropdown-divider my-1">
-                                @endif
-                                @if (auth()->user()->role === 'it' || auth()->user()->role === 'admin'|| auth()->user()->role === 'marketing' || auth()->user()->role === 'front_office')
-                                    <li>
-                                        <a class="dropdown-item py-2" href="{{ route('riwayat.checkin') }}">
-                                            <i class="fas fa-history me-2"></i> Riwayat Check-in
-                                        </a>
-                                    </li>
-                                    <hr class="dropdown-divider my-1">
-                                @endif
-
-                                <li>
-                                    <a class="dropdown-item py-2" href="{{ route('profile') }}">
-                                        <i class="fas fa-user me-2"></i> Profil Saya
-                                    </a>
-                                </li>
-
-                                <form action="/logout" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item py-2">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                    </button>
-                                </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
                     @endif
 
                 @endauth
