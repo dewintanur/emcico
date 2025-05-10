@@ -57,7 +57,7 @@
                 @auth
                     @if(auth()->user()->role === 'duty_officer')
                         <!-- Notifikasi untuk Duty Officer -->
-                        <li class="nav-item dropdown me-3 unstyled">
+                        <li class="nav-item dropdown me-3 list-unstyled ">
                             <a class="nav-link dropdown-toggle position-relative" href="#" id="notifikasiDropdown" role="button"
                                 data-bs-toggle="dropdown">
                                 <i class="fas fa-bell"></i>
@@ -67,9 +67,9 @@
                                     </span>
                                 @endif
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifikasiDropdown">
+                            <ul class="dropdown-menu dropdown-menu-end list-unstyled" aria-labelledby="notifikasiDropdown">
                                 @forelse($notifications as $notification)
-                                    <li>
+                                    <li style="list-style: none;">
                                         <a class="dropdown-item"
                                             href="{{ url('/ruangan?highlight=' . $notification->data['ruangan_id']) }}"
                                             onclick="markNotificationAsRead(event, '{{ $notification->id }}')">

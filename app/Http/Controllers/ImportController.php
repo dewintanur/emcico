@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\BookingImport;
+use Exception;
+use Log;
 
 class ImportController extends Controller
 {
@@ -26,9 +28,18 @@ class ImportController extends Controller
             'file' => 'required|mimes:csv',
         ]);
 
-        // Mengimpor file CSV
-        Excel::import(new BookingImport, $request->file('file'));
+        try {
+            // Mengimpor file CSV
+            Excel::import(new BookingImport, $request->file('file'));
 
-        return redirect()->route('booking.import')->with('success', 'Data booking berhasil diimpor!');
+            // Jika berhasil
+            return redirect()->route('booking.import')->with('success', 'Data booking berhasil diimpor!');
+        } catch (Exception $e) {
+            // Menangani error jika terjadi kegagalan pada saat import
+            Log::error('Import gagal: ' . $e->getMessage());
+
+            // Memberikan pesan error kepada user
+            return redirect()->route('booking.import')->with('error', 'Terjadi kesalahan saat mengimpor data. Silakan coba lagi.');
+        }
     }
 }

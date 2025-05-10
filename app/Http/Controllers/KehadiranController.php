@@ -212,6 +212,7 @@ class KehadiranController extends Controller
         ]);
 
         $booking = Booking::where('kode_booking', $request->kode_booking)->first();
+        $checkOutTime = Carbon::parse($booking->waktu_selesai)->subMinutes(30);
 
         // Periksa apakah ada peminjaman barang terkait dengan booking ini
         $peminjaman = PeminjamanBarang::where('kode_booking', $booking->kode_booking)->exists();
@@ -253,6 +254,8 @@ class KehadiranController extends Controller
                 'status' => 'Checked-in', // Status default
                 'created_at' => now(),
                 'updated_at' => now(),
+                'check_out_time' => $checkOutTime,
+
             ]);
 
             if (auth()->check() && auth()->user()->role == 'front_office') {

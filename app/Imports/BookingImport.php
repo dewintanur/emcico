@@ -7,7 +7,6 @@ use App\Models\ListBarang;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
-
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class BookingImport implements ToModel, WithHeadingRow
@@ -52,13 +51,14 @@ class BookingImport implements ToModel, WithHeadingRow
                     ]);
                 } else {
                     Log::warning("Stok barang tidak mencukupi untuk booking {$row['kode_booking']}");
+                    return null; // Return null jika stok barang tidak mencukupi
                 }
             }
 
             return $booking;
         } catch (\Exception $e) {
             Log::error('Gagal mengimpor baris: ' . json_encode($row) . ' Error: ' . $e->getMessage());
-            return null;
+            return null; // Return null jika terjadi kesalahan lainnya
         }
     }
 }

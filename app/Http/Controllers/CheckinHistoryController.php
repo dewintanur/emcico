@@ -50,23 +50,27 @@ class CheckinHistoryController extends Controller
 public function exportPdf(Request $request)
 {
     $tanggal = $request->input('tanggal');
-
+    
     if ($tanggal) {
         $tanggal = \Carbon\Carbon::parse($tanggal)->toDateString();
     }
 
+    // Ambil data terbaru dari database
     $kehadiran = Kehadiran::with([
-        'booking',            // ⬅️ Tambahkan ini untuk jaga-jaga
-        'booking.ruangan', 
-        'booking.peminjaman'
-    ])->when($tanggal, function ($query) use ($tanggal) {
+        'booking', 'booking.ruangan', 'booking.peminjaman', 
+        'dutyOfficer', 'fo'
+    ])
+    ->when($tanggal, function ($query) use ($tanggal) {
         return $query->whereDate('tanggal_ci', $tanggal);
-    })->get();
+    })
+    ->orderBy('created_at', 'desc') // opsional untuk memastikan urutan yang terbaru
+    ->get();
 
-  
+    // Debug: pastikan data sudah terupdate
 
+    // Render PDF dengan data terbaru
     $pdf = PDF::loadView('exports.riwayat-checkin-pdf', compact('kehadiran'))
-        ->setPaper('a4', 'landscape'); // **Set ke landscape**
+              ->setPaper('a4', 'landscape');
 
     return $pdf->download('riwayat_checkin.pdf');
 }

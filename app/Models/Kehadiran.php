@@ -21,7 +21,8 @@ class Kehadiran extends Model
         'status',
         'status_konfirmasi',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'check_out_time'
     ];
     public function dutyOfficer()
     {

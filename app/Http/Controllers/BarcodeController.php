@@ -22,7 +22,8 @@ class BarcodeController extends Controller
 
         foreach ($kodeBookings as $kode) {
             $booking = Booking::where('kode_booking', $kode)->first();
-            if (!$booking) continue;
+            if (!$booking)
+                continue;
 
             // 🔹 Buat folder jika belum ada
             $folderPath = storage_path('app/public/qrcodes/');
@@ -30,21 +31,21 @@ class BarcodeController extends Controller
                 mkdir($folderPath, 0777, true);
             }
 
-           // ✅ Simpan QR Code sebagai file PNG
-$qrCodePath = "qrcodes/$kode.png";
-$filePath = storage_path("app/public/" . $qrCodePath);
-file_put_contents($filePath, QrCode::format('png')
-    ->size(300)
-    ->margin(1)
-    ->errorCorrection('H')
-    ->generate($kode));
+            // ✅ Simpan QR Code sebagai file PNG
+            $qrCodePath = "qrcodes/$kode.png";
+            $filePath = storage_path("app/public/" . $qrCodePath);
+            file_put_contents($filePath, QrCode::format('png')
+                ->size(300)
+                ->margin(1)
+                ->errorCorrection('H')
+                ->generate($kode));
 
             // ✅ Pastikan URL gambar dapat diakses
             $qrCodeUrl = asset("storage/qrcodes/$kode.png"); // Gambar dapat diakses melalui URL ini
 
             // ✅ Buat pesan WhatsApp
             $waMessage = "Halo, berikut QR code untuk check-in:\nKode Booking: $kode";
-            
+
             // Kirim URL gambar sebagai bagian dari pesan
             $waLink = "https://wa.me/62" . $booking->no_pic . "?text=" . urlencode($waMessage) . "%0A" . urlencode($qrCodeUrl);
 
