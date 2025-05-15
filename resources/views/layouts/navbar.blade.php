@@ -32,7 +32,38 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url('/') }}">
+        @php
+            use Illuminate\Support\Facades\Auth;
+
+            $user = Auth::user();
+            $redirectUrl = url('/'); // default jika tidak login
+
+            if ($user) {
+                switch ($user->role) {
+                    case 'front_office':
+                        $redirectUrl = route('fo.bookingList');
+                        break;
+                    case 'marketing':
+                        $redirectUrl = route('marketing.peminjaman');
+                        break;
+                    case 'it':
+                    case 'admin':
+                        $redirectUrl = route('users.index');
+                        break;
+                    case 'produksi':
+                        $redirectUrl = route('produksi.peminjaman');
+                        break;
+                    case 'duty_officer':
+                        $redirectUrl = route('ruangan.index');
+                        break;
+                    default:
+                        $redirectUrl = url('/');
+                        break;
+                }
+            }
+        @endphp
+
+        <a class="navbar-brand" href="{{ $redirectUrl }}">
             <img src="https://event.mcc.or.id/assets/images/logo.png" width="250" alt="Event Malang Creative Center">
         </a>
 
@@ -129,7 +160,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser"
                                     style="font-family: 'Montserrat', sans-serif; font-size: 14px; min-width: 200px;">
-                                   <!-- role front office -->
+                                    <!-- role front office -->
                                     @if (auth()->user()->role === 'it' || auth()->user()->role === 'front_office' || auth()->user()->role === 'admin')
                                         <li class="dropdown-header text-muted">Front Office</li>
 
