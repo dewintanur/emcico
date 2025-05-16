@@ -44,7 +44,7 @@ class BarcodeController extends Controller
             $qrCodeUrl = asset("storage/qrcodes/$kode.png"); // Gambar dapat diakses melalui URL ini
 
             // ✅ Buat pesan WhatsApp
-            $waMessage = "Halo, berikut QR code untuk check-in:\nKode Booking: $kode";
+            $waMessage = "Halo, $booking->nama_pic\nberikut QR code untuk $booking->nama_event \nKode Booking: $kode\nIni adalah QR Code untuk acara Anda. Silakan tunjukkan QR Code ini saat check-in.\n";
 
             // Kirim URL gambar sebagai bagian dari pesan
             $waLink = "https://wa.me/62" . $booking->no_pic . "?text=" . urlencode($waMessage) . "%0A" . urlencode($qrCodeUrl);

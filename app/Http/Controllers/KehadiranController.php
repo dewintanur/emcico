@@ -63,7 +63,7 @@ class KehadiranController extends Controller
             'booking' => $booking
         ]);
     }
-    public function checkin($kodeBooking) 
+public function checkin($kodeBooking) 
 {
     $booking = Booking::where('kode_booking', $kodeBooking)
         ->whereDate('tanggal', today())
@@ -98,18 +98,18 @@ class KehadiranController extends Controller
         return back()->with('gagal', 'Sudah dilakukan check-in hari ini.');
     }
 
-    // Tambahan validasi: hanya boleh check-in jika booking sebelumnya sudah check-out
-    $bookingSebelumnya = Booking::join('kehadiran', 'booking.kode_booking', '=', 'kehadiran.kode_booking')
+    // Tambahan validasi: cek apakah ada booking sebelumnya yang belum check-out
+    $bookingSebelumnyaBelumCheckout = Booking::join('kehadiran', 'booking.kode_booking', '=', 'kehadiran.kode_booking')
         ->where('booking.tanggal', $booking->tanggal)
         ->where('booking.ruangan_id', $booking->ruangan_id)
         ->where('booking.lantai', $booking->lantai)
         ->where('booking.waktu_selesai', '<=', $booking->waktu_mulai)
-        ->where('kehadiran.status', 'checked-out')
+        ->where('kehadiran.status', 'checked-in') // belum checkout
         ->orderBy('booking.waktu_selesai', 'desc')
         ->first();
 
-    if (!$bookingSebelumnya && $waktuSekarang < $jamMulai) {
-        return back()->with('gagal', 'Check-in hanya bisa dilakukan mulai pukul ' . $jamMulai . ', atau setelah booking sebelumnya selesai dan sudah check-out.');
+    if ($bookingSebelumnyaBelumCheckout) {
+        return back()->with('gagal', 'Tidak dapat check-in karena terdapat booking sebelumnya yang belum check-out.');
     }
 
     // Log aktivitas
@@ -119,8 +119,9 @@ class KehadiranController extends Controller
         'aktivitas' => 'Melakukan check-in',
         'waktu' => Carbon::now(),
     ]);
-     // Menambahkan log untuk melihat URL yang dihasilkan saat redirect
-     Log::info('Redirecting to isi_data route', [
+
+    // Logging redirect
+    Log::info('Redirecting to isi_data route', [
         'route' => route('isi_data'), 
         'booking' => $booking
     ]);

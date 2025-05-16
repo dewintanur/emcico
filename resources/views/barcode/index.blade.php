@@ -30,6 +30,14 @@
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+    <tr>
+        <td>
+            <input type="checkbox" id="select-all-bottom">
+        </td>
+        <td colspan="3"><small>Pilih Semua Booking</small></td>
+    </tr>
+</tfoot>
             </table>
 
             <button type="submit" class="btn btn-primary mt-3" 
@@ -60,3 +68,25 @@
     @endif
 </div>
 @endsection
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectTop = document.getElementById('select-all');
+        const selectBottom = document.getElementById('select-all-bottom');
+        const checkboxes = document.querySelectorAll('input[name="kode_booking[]"]');
+
+        function toggleAll(checked) {
+            checkboxes.forEach(cb => cb.checked = checked);
+        }
+
+        selectTop?.addEventListener('change', function () {
+            toggleAll(this.checked);
+            if (selectBottom) selectBottom.checked = this.checked;
+        });
+
+        selectBottom?.addEventListener('change', function () {
+            toggleAll(this.checked);
+            if (selectTop) selectTop.checked = this.checked;
+        });
+    });
+</script>
+

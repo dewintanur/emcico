@@ -21,7 +21,7 @@ class ImportController extends Controller
     /**
      * Mengimpor data booking dari CSV.
      */
-    public function import(Request $request)
+   public function import(Request $request)
     {
         // Validasi file CSV
         $request->validate([
@@ -29,10 +29,15 @@ class ImportController extends Controller
         ]);
 
         try {
-            // Mengimpor file CSV
-            Excel::import(new BookingImport, $request->file('file'));
+            $import = new BookingImport(); // Gunakan instance agar bisa akses $errors
+            Excel::import($import, $request->file('file'));
 
-            // Jika berhasil
+            if (count($import->errors) > 0) {
+                return redirect()->route('booking.import')
+                    ->with('error', 'Sebagian data gagal diimpor.')
+                    ->with('import_errors', $import->errors); // Kirim daftar error
+            }
+
             return redirect()->route('booking.import')->with('success', 'Data booking berhasil diimpor!');
         } catch (Exception $e) {
             // Menangani error jika terjadi kegagalan pada saat import

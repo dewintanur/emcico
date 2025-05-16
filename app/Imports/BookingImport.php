@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Imports;
 
 use App\Models\Booking;
@@ -11,10 +12,18 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class BookingImport implements ToModel, WithHeadingRow
 {
+    public $errors = [];
+
     public function model(array $row)
     {
         try {
-            $booking = new Booking([
+            // Cek duplikat kode_booking
+            if (Booking::where('kode_booking', $row['kode_booking'])->exists()) {
+                $this->errors[] = "Kode {$row['kode_booking']} sudah ada.";
+                return null;
+            }
+
+            $booking = Booking::create([
                 'kode_booking' => $row['kode_booking'],
                 'tanggal' => Carbon::parse($row['tanggal'])->format('Y-m-d'),
                 'nama_event' => $row['nama_event'],
@@ -33,32 +42,31 @@ class BookingImport implements ToModel, WithHeadingRow
                 'updated_at' => Carbon::parse($row['updated_at'])->format('Y-m-d H:i:s'),
             ]);
 
-            $booking->save();
-
+            // Barang dipinjam
             if (!empty($row['barang_id']) && !empty($row['jumlah'])) {
                 $barang = ListBarang::find($row['barang_id']);
 
-                if ($barang && $barang->jumlah >= (int) $row['jumlah']) {
-                    $barang->jumlah -= (int) $row['jumlah'];
-                    $barang->save();
-
-                    PeminjamanBarang::create([
-                        'kode_booking' => $row['kode_booking'],
-                        'barang_id' => (int) $row['barang_id'],
-                        'jumlah' => (int) $row['jumlah'],
-                        'marketing' => $row['marketing'] ?? 'Tidak Diketahui',
-                        'created_by' => auth()->id(),
-                    ]);
-                } else {
-                    Log::warning("Stok barang tidak mencukupi untuk booking {$row['kode_booking']}");
-                    return null; // Return null jika stok barang tidak mencukupi
+                if (!$barang || $barang->jumlah < (int) $row['jumlah']) {
+                    $this->errors[] = "Stok barang tidak cukup untuk {$row['kode_booking']}.";
+                    return null;
                 }
+
+                $barang->jumlah -= (int) $row['jumlah'];
+                $barang->save();
+
+                PeminjamanBarang::create([
+                    'kode_booking' => $row['kode_booking'],
+                    'barang_id' => (int) $row['barang_id'],
+                    'jumlah' => (int) $row['jumlah'],
+                    'marketing' => $row['marketing'] ?? 'Tidak Diketahui',
+                    'created_by' => auth()->id(),
+                ]);
             }
 
             return $booking;
         } catch (\Exception $e) {
-            Log::error('Gagal mengimpor baris: ' . json_encode($row) . ' Error: ' . $e->getMessage());
-            return null; // Return null jika terjadi kesalahan lainnya
+            $this->errors[] = "Baris gagal ({$row['kode_booking']}).";
+            return null;
         }
     }
 }
