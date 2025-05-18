@@ -68,114 +68,114 @@
     </style>
 @endpush
 @push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const container = document.getElementById("notification-container");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("notification-container");
 
-        // Tampilkan toast yang ada
-        document.querySelectorAll(".notification-toast").forEach(toast => {
-            toast.classList.remove("d-none");
-            container.appendChild(toast);
-        });
-
-        // Tutup manual
-        document.querySelectorAll(".btn-close").forEach(button => {
-            button.addEventListener("click", function () {
-                const notifId = this.getAttribute("data-id");
-                document.getElementById(`notif-${notifId}`).remove();
+            // Tampilkan toast yang ada
+            document.querySelectorAll(".notification-toast").forEach(toast => {
+                toast.classList.remove("d-none");
+                container.appendChild(toast);
             });
-        });
 
-        // Tandai dibaca
-        document.querySelectorAll(".mark-as-read").forEach(button => {
-            button.addEventListener("click", function () {
-                let notificationId = this.getAttribute("data-id");
-                let kodeBooking = this.getAttribute("data-kode");
-
-                fetch(`/notifications/${notificationId}/read`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById(`notif-${notificationId}`).remove();
-                        window.location.hash = `#booking-${kodeBooking}`;
-
-                        setTimeout(() => {
-                            let targetRow = document.getElementById(`booking-${kodeBooking}`);
-                            if (targetRow && targetRow.tagName.toLowerCase() === 'tr') {
-                                targetRow.classList.add("highlight");
-                                setTimeout(() => targetRow.classList.remove("highlight"), 2000);
-                            }
-                        }, 500);
-                    }
+            // Tutup manual
+            document.querySelectorAll(".btn-close").forEach(button => {
+                button.addEventListener("click", function () {
+                    const notifId = this.getAttribute("data-id");
+                    document.getElementById(`notif-${notifId}`).remove();
                 });
             });
+
+            // Tandai dibaca
+            document.querySelectorAll(".mark-as-read").forEach(button => {
+                button.addEventListener("click", function () {
+                    let notificationId = this.getAttribute("data-id");
+                    let kodeBooking = this.getAttribute("data-kode");
+
+                    fetch(`/notifications/${notificationId}/read`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById(`notif-${notificationId}`).remove();
+                                window.location.hash = `#booking-${kodeBooking}`;
+
+                                setTimeout(() => {
+                                    let targetRow = document.getElementById(`booking-${kodeBooking}`);
+                                    if (targetRow && targetRow.tagName.toLowerCase() === 'tr') {
+                                        targetRow.classList.add("highlight");
+                                        setTimeout(() => targetRow.classList.remove("highlight"), 2000);
+                                    }
+                                }, 500);
+                            }
+                        });
+                });
+            });
+
+            // Jika reload dengan hash
+            let hash = window.location.hash;
+            if (hash && hash.startsWith("#booking-")) {
+                let targetRow = document.querySelector(hash);
+                if (targetRow && targetRow.tagName.toLowerCase() === 'tr') {
+                    setTimeout(() => {
+                        targetRow.classList.add("highlight");
+                        setTimeout(() => {
+                            targetRow.classList.remove("highlight");
+                        }, 2000);
+                    }, 500);
+                }
+            }
+
+            // Update status table
+            setInterval(updateTable, 5000);
+            setInterval(checkNotification, 5000);
         });
 
-        // Jika reload dengan hash
-        let hash = window.location.hash;
-        if (hash && hash.startsWith("#booking-")) {
-            let targetRow = document.querySelector(hash);
-            if (targetRow && targetRow.tagName.toLowerCase() === 'tr') {
-                setTimeout(() => {
-                    targetRow.classList.add("highlight");
-                    setTimeout(() => {
-                        targetRow.classList.remove("highlight");
-                    }, 2000);
-                }, 500);
-            }
+        function updateTable() {
+            $.ajax({
+                url: "{{ route('booking.status') }}",
+                type: "GET",
+                success: function (response) {
+                    response.data.forEach(function (item) {
+                        let row = $("#booking-" + item.kode_booking);
+                        let statusCell = $(".status-" + item.kode_booking);
+                        statusCell.text(item.status_konfirmasi);
+                        row.removeClass("alert-highlight alert-siap alert-normal");
+
+                        if (item.status.toLowerCase() === "checked-in") {
+                            if (item.status_konfirmasi === "belum_siap_checkout") {
+                                row.addClass("alert-highlight");
+                            } else if (item.status_konfirmasi === "siap_checkout") {
+                                row.addClass("alert-siap");
+                            }
+                        } else if (item.status.toLowerCase() === "checked-out") {
+                            row.addClass("alert-normal");
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", error);
+                }
+            });
         }
 
-        // Update status table
-        setInterval(updateTable, 5000);
-        setInterval(checkNotification, 5000);
-    });
-
-    function updateTable() {
-        $.ajax({
-            url: "{{ route('booking.status') }}",
-            type: "GET",
-            success: function (response) {
-                response.data.forEach(function (item) {
-                    let row = $("#booking-" + item.kode_booking);
-                    let statusCell = $(".status-" + item.kode_booking);
-                    statusCell.text(item.status_konfirmasi);
-                    row.removeClass("alert-highlight alert-siap alert-normal");
-
-                    if (item.status.toLowerCase() === "checked-in") {
-                        if (item.status_konfirmasi === "belum_siap_checkout") {
-                            row.addClass("alert-highlight");
-                        } else if (item.status_konfirmasi === "siap_checkout") {
-                            row.addClass("alert-siap");
-                        }
-                    } else if (item.status.toLowerCase() === "checked-out") {
-                        row.addClass("alert-normal");
+        function checkNotification() {
+            fetch('/notifications/unread')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ada_notifikasi) {
+                        console.log('Ada notifikasi baru');
+                        // Tambahkan tindakan tambahan jika perlu
                     }
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log("AJAX Error:", error);
-            }
-        });
-    }
-
-    function checkNotification() {
-        fetch('/notifications/unread')
-            .then(response => response.json())
-            .then(data => {
-                if (data.ada_notifikasi) {
-                    console.log('Ada notifikasi baru');
-                    // Tambahkan tindakan tambahan jika perlu
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    }
-</script>
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 @endpush
 
 
@@ -266,7 +266,7 @@
             <div class="col-md-3 text-end">
                 <div class="dropdown">
                     <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown"
-                        data-bs-toggle="dropdown" aria-expanded="false"   {{ $isAdminOrIT ? 'disabled' : '' }}>
+                        data-bs-toggle="dropdown" aria-expanded="false" {{ $isAdminOrIT ? 'disabled' : '' }}>
                         <i class="fas fa-download"></i> Export
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="exportDropdown">
@@ -368,7 +368,7 @@
 
                                                     <button type="button" class="btn btn-sm"
                                                         style="background-color: rgba(91, 76, 225, 0.5); color:#3207CF; font-weight: 600;"
-                                                        onclick="showCheckinAlert()"   {{ $isAdminOrIT ? 'disabled' : '' }}>
+                                                        onclick="showCheckinAlert()" {{ $isAdminOrIT ? 'disabled' : '' }}>
                                                         Pilih Duty Officer
                                                     </button>
 
@@ -392,11 +392,23 @@
                                                 @if (!empty($booking->nama_ci) && !empty($booking->no_ci))
                                                     {{ $booking->nama_ci }}<br>
                                                     @php
-                                                        $no_ci = preg_replace('/\D/', '', $booking->no_ci);
+                                                        // Ambil nomor dan bersihkan karakter non-angka
+                                                        $cleaned = preg_replace('/\D/', '', $booking->no_ci);
+
+                                                        // Ubah 08xxxx menjadi 62xxxx
+                                                        if (Str::startsWith($cleaned, '0')) {
+                                                            $no_ci = '62' . substr($cleaned, 1);
+                                                        } elseif (Str::startsWith($cleaned, '62')) {
+                                                            $no_ci = $cleaned;
+                                                        } else {
+                                                            $no_ci = '62' . $cleaned; // fallback jika nomor tidak dimulai dari 0 atau 62
+                                                        }
                                                     @endphp
+
                                                     <a href="https://wa.me/{{ $no_ci }}" target="_blank" style="color: #25D366;">
-                                                        {{ $no_ci }}
+                                                        {{ $booking->no_ci }}
                                                     </a>
+
                                                 @else
 
                                                     <em class="text-secondary">Belum Check-in</em>
@@ -427,7 +439,7 @@
                                                     {{-- Status awal masih Booked, tombol akan mengarah ke proses Check-in --}}
                                                     <a href="{{ $isAdminOrIT ? '#' : route('checkin', ['kode_booking' => $booking->kode_booking]) }}"
                                                         class="btn w-100 custom-shadow"
-                                                        style="background-color: rgba(150, 150, 150, 0.5); font-weight: 600; color: #696969;" >
+                                                        style="background-color: rgba(150, 150, 150, 0.5); font-weight: 600; color: #696969;">
                                                         Booked
                                                     </a>
                                                 @endif
@@ -499,7 +511,7 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="modalLabel{{ $booking->id }}"   {{ $isAdminOrIT ? 'disabled' : '' }}>Pilih Duty Officer
+                                        <h5 class="modal-title" id="modalLabel{{ $booking->id }}" {{ $isAdminOrIT ? 'disabled' : '' }}>Pilih Duty Officer
                                         </h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
