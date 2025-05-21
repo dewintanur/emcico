@@ -188,29 +188,35 @@
     <!-- Toast Container -->
     <div id="notification-container"></div>
 
-    <!-- Notifikasi Pop-Up -->
-    @foreach (auth()->user()->unreadNotifications as $notification)
-        <div class="notification-toast d-none" id="notif-{{ $notification->id }}">
-            <div class="d-flex justify-content-between align-items-start">
-                <div style="flex: 1;">
-                    <p class="mb-1">{{ $notification->data['message'] }}</p>
-                    <small class="text-muted">Kode Booking: {{ $notification->data['kode_booking'] ?? '-' }}</small>
-                </div>
-                <button class="btn-close ms-2" data-id="{{ $notification->id }}"></button>
-            </div>
-            <div class="mt-2 d-flex justify-content-end">
-                @if ($notification->data['kode_booking'])
-                    <a href="#booking-{{ $notification->data['kode_booking'] }}" class="btn btn-sm btn-primary me-2">
-                        Lihat Booking
-                    </a>
+   @foreach (auth()->user()->unreadNotifications as $notification)
+
+    <div class="notification-toast d-none" id="notif-{{ $notification->id }}">
+        <div class="d-flex justify-content-between align-items-start">
+            <div style="flex: 1;">
+                <p class="mb-1">{{ $notification->data['message'] }}</p>
+
+                @if (!empty($notification->data['note']))
+                    <p class="mb-1"><em>Catatan: {{ $notification->data['note'] }}</em></p>
                 @endif
-                <button class="btn btn-sm btn-secondary mark-as-read" data-id="{{ $notification->id }}"
-                    data-kode="{{ $notification->data['kode_booking'] }}">
-                    Tandai Dibaca
-                </button>
+
+                <small class="text-muted">Kode Booking: {{ $notification->data['kode_booking'] ?? '-' }}</small>
             </div>
+            <button class="btn-close ms-2" data-id="{{ $notification->id }}"></button>
         </div>
-    @endforeach
+        <div class="mt-2 d-flex justify-content-end">
+            @if ($notification->data['kode_booking'])
+                <a href="#booking-{{ $notification->data['kode_booking'] }}" class="btn btn-sm btn-primary me-2">
+                    Lihat Booking
+                </a>
+            @endif
+            <button class="btn btn-sm btn-secondary mark-as-read" data-id="{{ $notification->id }}"
+                data-kode="{{ $notification->data['kode_booking'] }}">
+                Tandai Dibaca
+            </button>
+        </div>
+    </div>
+@endforeach
+
 
     {{-- Session Alert --}}
     @if(session('gagal'))

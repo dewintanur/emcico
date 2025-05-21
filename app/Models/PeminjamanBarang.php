@@ -32,6 +32,10 @@ class PeminjamanBarang extends Model
     {
         return $this->belongsTo(ListBarang::class, 'barang_id', 'id');
     }
-    
+    public function marketing()
+{
+    return $this->belongsTo(User::class, 'marketing'); // Ganti 'User' jika pakai model lain
+}
+
     
 }

@@ -38,16 +38,18 @@
             <tr>
                 <th>No</th>
                 <th>Kode Booking</th>
-                <th>Nama Organisasi</th>
                 <th>Nama Event</th>
+                <th>Nama Organisasi</th>
+                <th>Nama PIC</th> <!-- ✅ Tambahan -->
                 <th>Nama User</th>
-                <th>Tanggal Check-in</th>
+                <th>Tanggal Check-in</th> <!-- ✅ Tambahan -->
+                <th>Tanggal Check-out</th> <!-- ✅ Tambahan -->
                 <th>Waktu Mulai</th>
                 <th>Waktu Selesai</th>
                 <th>Ruangan</th>
                 <th>Lantai</th>
-                <th>Peminjaman Barang</th> <!-- ✅ Tambahkan -->
-                <th>Marketing</th> <!-- ✅ Tambahkan -->
+                <th>Peminjaman Barang</th>
+                <th>Marketing</th>
                 <th>Tanda Tangan User</th>
                 <th>Petugas Duty Officer</th>
                 <th>Petugas Front Office</th>
@@ -58,18 +60,28 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $data->kode_booking }}</td>
-                    <td>{{ $data->booking->nama_organisasi ?? '-' }}</td>
                     <td>{{ $data->booking->nama_event ?? '-' }}</td>
-                    <td>{{ $data->nama_ci }}</td>
+                    <td>{{ $data->booking->nama_organisasi ?? '-' }}</td>
+                    <td>{{ $data->booking->nama_pic ?? '-' }}</td> <!-- ✅ Tambahan -->
+                    <td>{{ $data->nama_ci ?? '-' }}</td>
                     <td>{{ \Carbon\Carbon::parse($data->created_at)->format('d F Y, H:i') }}</td>
-                    <td>{{ $data->booking && $data->booking->waktu_mulai ? \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') : '-' }}
+                    <td>
+                        @if ($data->updated_at && $data->updated_at != $data->created_at)
+                            {{ \Carbon\Carbon::parse($data->updated_at)->format('d F Y, H:i') }}
+                        @else
+                            Belum Checkout
+                        @endif
                     </td>
-                    <td>{{ $data->booking && $data->booking->waktu_selesai ? \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') : '-' }}
+                    <td>
+                        {{ $data->booking && $data->booking->waktu_mulai ? \Carbon\Carbon::parse($data->booking->waktu_mulai)->format('H:i') : '-' }}
                     </td>
-                    <td>{{ $data->booking->ruangan->nama_ruangan ?? '-' }}</td>
+                    <td>
+                        {{ $data->booking && $data->booking->waktu_selesai ? \Carbon\Carbon::parse($data->booking->waktu_selesai)->format('H:i') : '-' }}
+                    </td>
+                    <td>{{ optional(optional($data->booking)->ruangan)->nama_ruangan ?? '-' }}</td>
                     <td>{{ $data->booking->lantai ?? '-' }}</td>
                     <td>
-                        {{ optional($data->booking)->peminjaman ? 'Ada' : 'Tidak Ada' }}
+                        {{ optional($data->booking)->peminjaman && $data->booking->peminjaman->isNotEmpty() ? 'Ada' : 'Tidak Ada' }}
                     </td>
                     <td>
                         @if ($data->booking && $data->booking->peminjaman && $data->booking->peminjaman->isNotEmpty())
@@ -78,8 +90,6 @@
                             Tidak Ada
                         @endif
                     </td>
-
-
                     <td>
                         @if ($data->ttd)
                             <img src="{{ $data->ttd }}" alt="Tanda Tangan" style="width: 100px; height: auto;">
@@ -89,7 +99,6 @@
                     </td>
                     <td>{{ $data->dutyOfficer->nama ?? 'Tidak Ada' }}</td>
                     <td>{{ $data->fo->nama ?? 'Belum Checkout' }}</td>
-
                 </tr>
             @endforeach
         </tbody>

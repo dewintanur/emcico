@@ -7,8 +7,7 @@
     <a href="{{ route('riwayat.checkin') }}" class="btn btn-secondary mb-3">Kembali</a>
 
     <!-- HEADER TABEL -->
-    <div class="rounded-3 text-white text-center p-2"
-        style="background-color: #091F5B; font-weight: bold;">
+    <div class="rounded-3 text-white text-center p-2" style="background-color: #091F5B; font-weight: bold;">
         <div class="row">
             <div class="col-1">No</div>
             <div class="col-2">Nama Event</div>
@@ -16,7 +15,8 @@
             <div class="col-2">Ruangan & Lantai</div>
             <div class="col-1">Duty Officer</div>
             <div class="col-1">Status</div>
-            <div class="col-2">Tanggal Check-in</div>
+            <div class="col-1">Check-in</div>
+            <div class="col-1">Check-out</div>
             <div class="col-1">Pinjam Barang</div>
         </div>
     </div>
@@ -24,8 +24,7 @@
     <!-- LIST DATA CHECK-IN (PER BARIS SEBAGAI CARD) -->
     <div class="mt-2">
         @foreach ($kehadiran as $index => $data)
-        <div class="card mb-2 shadow-sm border-0 p-2"
-            style="border-radius: 12px;">
+        <div class="card mb-2 shadow-sm border-0 p-2" style="border-radius: 12px;">
             <div class="row text-center align-items-center">
                 <div class="col-1">{{ $loop->iteration }}</div>
                 <div class="col-2 text-truncate">{{ $data->booking->nama_event ?? '-' }}</div>
@@ -40,8 +39,15 @@
                         {{ $data->status }}
                     </span>
                 </div>
-                <div class="col-2">
-                    {{ \Carbon\Carbon::parse($data->tanggal_ci)->translatedFormat('d F Y') }}
+                <div class="col-1">
+                    {{ \Carbon\Carbon::parse($data->created_at)->translatedFormat('d M Y H:i') }}
+                </div>
+                <div class="col-1">
+                    @if ($data->status == 'Checked-out')
+                        {{ \Carbon\Carbon::parse($data->updated_at)->translatedFormat('d M Y H:i') }}
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
                 </div>
                 <div class="col-1">
                     @php
@@ -97,7 +103,6 @@
                                             <th>Nama Item</th>
                                             <th>Jumlah</th>
                                             <th>Status Pengembalian</th>
-
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -106,8 +111,9 @@
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $item->barang->nama_barang }}</td>
                                                 <td>{{ $item->jumlah }}</td>
-                                                <td class="color: {{ $item->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">{{ $item->status_pengembalian ?? 'Belum Dikembalikan' }}</td>
-
+                                                <td class="color: {{ $item->status_pengembalian === 'Sudah Dikembalikan' ? 'green' : 'red' }}">
+                                                    {{ $item->status_pengembalian ?? 'Belum Dikembalikan' }}
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

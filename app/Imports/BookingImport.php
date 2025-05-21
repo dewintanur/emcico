@@ -18,10 +18,12 @@ class BookingImport implements ToModel, WithHeadingRow
     {
         try {
             // Cek duplikat kode_booking
-            if (Booking::where('kode_booking', $row['kode_booking'])->exists()) {
-                $this->errors[] = "Kode {$row['kode_booking']} sudah ada.";
-                return null;
-            }
+         if (Booking::where('kode_booking', $row['kode_booking'])
+    ->where('tanggal', Carbon::parse($row['tanggal'])->format('Y-m-d'))
+    ->exists()) {
+    $this->errors[] = "Kode {$row['kode_booking']} pada tanggal {$row['tanggal']} sudah ada.";
+    return null;
+}
 
             $booking = Booking::create([
                 'kode_booking' => $row['kode_booking'],

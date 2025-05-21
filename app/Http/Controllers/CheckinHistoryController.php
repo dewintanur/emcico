@@ -11,19 +11,20 @@ class CheckinHistoryController extends Controller
 {
   public function index(Request $request)
 {
-    // Ambil tanggal dari request
-    $tanggal = $request->input('tanggal');
+    $bulan = $request->input('bulan'); // Format: YYYY-MM
 
-    // Query kehadiran + relasi booking
     $kehadiran = Kehadiran::with('booking')
-        ->when($tanggal, function ($query) use ($tanggal) {
-            return $query->whereDate('tanggal_ci', $tanggal);
+        ->when($bulan, function ($query) use ($bulan) {
+            $start = \Carbon\Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
+            $end = \Carbon\Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+            return $query->whereBetween('tanggal_ci', [$start, $end]);
         })
         ->orderBy('tanggal_ci', 'desc')
         ->get();
 
     return view('riwayat.checkin', compact('kehadiran'));
 }
+
 
 
     public function show($kode_booking)
@@ -36,43 +37,34 @@ class CheckinHistoryController extends Controller
         return view('riwayat.checkin_detail', compact('kehadiran', 'kode_booking'));
     }
     
-    public function exportExcel(Request $request)
+ public function exportExcel(Request $request)
 {
-    $tanggal = $request->input('tanggal'); // Ambil tanggal dari request
+    $bulan = $request->input('bulan');
 
-    if ($tanggal) {
-        $tanggal = \Carbon\Carbon::parse($tanggal)->toDateString(); // Format jadi string YYYY-MM-DD
-    }
-
-    return Excel::download(new RiwayatCheckinExport($tanggal), 'riwayat_checkin.xlsx');
+    return Excel::download(new RiwayatCheckinExport($bulan), 'riwayat_checkin_' . $bulan . '.xlsx');
 }
+
 
 public function exportPdf(Request $request)
 {
-    $tanggal = $request->input('tanggal');
-    
-    if ($tanggal) {
-        $tanggal = \Carbon\Carbon::parse($tanggal)->toDateString();
-    }
+    $bulan = $request->input('bulan');
 
-    // Ambil data terbaru dari database
     $kehadiran = Kehadiran::with([
         'booking', 'booking.ruangan', 'booking.peminjaman', 
         'dutyOfficer', 'fo'
     ])
-    ->when($tanggal, function ($query) use ($tanggal) {
-        return $query->whereDate('tanggal_ci', $tanggal);
+    ->when($bulan, function ($query) use ($bulan) {
+        $start = \Carbon\Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
+        $end = \Carbon\Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+        return $query->whereBetween('tanggal_ci', [$start, $end]);
     })
-    ->orderBy('created_at', 'desc') // opsional untuk memastikan urutan yang terbaru
+    ->orderBy('created_at', 'desc')
     ->get();
 
-    // Debug: pastikan data sudah terupdate
-
-    // Render PDF dengan data terbaru
     $pdf = PDF::loadView('exports.riwayat-checkin-pdf', compact('kehadiran'))
               ->setPaper('a4', 'landscape');
 
-    return $pdf->download('riwayat_checkin.pdf');
+    return $pdf->download('riwayat_checkin_' . $bulan . '.pdf');
 }
 
 

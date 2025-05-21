@@ -6,11 +6,12 @@
 
     <!-- Filter & Export -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <!-- Filter Tanggal -->
-        <input type="date" name="tanggal" id="filter_tanggal"
-            class="form-control"
-            value="{{ request('tanggal') }}"
-            style="width: 180px; border: 2px solid #091F5B; border-radius: 8px;">
+     
+<!-- Filter Bulanan -->
+<input type="month" name="bulan" id="filter_bulan"
+    class="form-control"
+    value="{{ request('bulan') }}"
+    style="width: 180px; border: 2px solid #091F5B; border-radius: 8px;">
 
         <!-- Tombol Export -->
         <div class="dropdown">
@@ -20,12 +21,12 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
                 <li>
-                    <a class="dropdown-item" href="{{ route('riwayat.checkin.export.excel', ['tanggal' => request('tanggal')]) }}">
+                    <a class="dropdown-item" href="{{ route('riwayat.checkin.export.excel', ['bulan' => request('bulan')]) }}">
                         <i class="fas fa-file-excel text-success"></i> Export Excel
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="{{ route('riwayat.checkin.export.pdf', ['tanggal' => request('tanggal')]) }}">
+                    <a class="dropdown-item" href="{{ route('riwayat.checkin.export.pdf', ['bulan' => request('bulan')]) }}">
                         <i class="fas fa-file-pdf text-danger"></i> Export PDF
                     </a>
                 </li>
@@ -77,9 +78,10 @@
 
 <!-- Script untuk Auto Filter Tanpa Enter -->
 <script>
-    document.getElementById('filter_tanggal').addEventListener('change', function () {
-        window.location.href = "{{ route('riwayat.checkin') }}?tanggal=" + this.value;
+    document.getElementById('filter_bulan').addEventListener('change', function () {
+        window.location.href = "{{ route('riwayat.checkin') }}?bulan=" + this.value;
     });
 </script>
+
 
 @endsection
